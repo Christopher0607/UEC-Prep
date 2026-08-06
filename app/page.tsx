@@ -5,8 +5,10 @@ import Countdown from "@/components/Countdown";
 import { ClientOnly, CopyPrompt, Empty, Panel } from "@/components/ui";
 import {
   A1_THRESHOLD,
+  DAILY_MINUTES,
   FIRST_EXAM,
   PHASES,
+  STUDY_BLOCKS,
   RESULTS_DAY,
   SUBJECTS_BY_DATE,
   daysUntil,
@@ -87,6 +89,26 @@ export default function Dashboard() {
           </ol>
         </Panel>
       )}
+
+      <Panel
+        title="每天的时间块"
+        subtitle={`合计约 ${Math.round((DAILY_MINUTES / 60) * 10) / 10} 小时 · 到第一场约 ${Math.round((daysUntil(FIRST_EXAM, now) * DAILY_MINUTES) / 60)} 小时`}
+      >
+        <ul className="space-y-2">
+          {STUDY_BLOCKS.map((block) => (
+            <li key={block.label} className="flex flex-wrap items-baseline gap-x-3 rounded-xl border p-3">
+              <span className="w-24 shrink-0 font-semibold tnum">{block.label}</span>
+              <span className="text-sm font-medium">{block.bestFor}</span>
+              <span className="w-full text-sm text-muted-foreground sm:w-auto sm:flex-1">
+                {block.why}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm text-muted-foreground">
+          把任务配对块，是总量固定时唯一能提效的地方 —— 3 小时的块拿去背单词，等于把最贵的时间浪费掉。
+        </p>
+      </Panel>
 
       <Panel
         title="今日"

@@ -107,6 +107,49 @@ export const PHASES: Phase[] = [
   },
 ];
 
+/**
+ * The student's actual daily blocks, in their own words. Planning against these
+ * beats planning against a total: a 30-minute gap and a 3-hour evening are not
+ * interchangeable, and matching the task to the block is most of what "studying
+ * efficiently" means when the total is fixed.
+ */
+export interface StudyBlock {
+  label: string;
+  minutes: number;
+  /** What this block is actually good for. Short blocks cannot do deep work. */
+  bestFor: string;
+  why: string;
+}
+
+export const STUDY_BLOCKS: StudyBlock[] = [
+  {
+    label: "40 分钟",
+    minutes: 40,
+    bestFor: "背诵卡 + 错题重做",
+    why: "太短，开不了新章节。用来清到期的卡和重做昨天的错题，正好。",
+  },
+  {
+    label: "30 分钟",
+    minutes: 30,
+    bestFor: "语法 / Word Form 刷题",
+    why: "Paper 2 的 Section 4、5 是规则题，碎片时间刷最划算。",
+  },
+  {
+    label: "3 小时",
+    minutes: 180,
+    bestFor: "补洞，或一整套限时模考",
+    why: "唯一装得下一套完整试卷的块。别用来背单词 —— 那是浪费。",
+  },
+  {
+    label: "2 小时（补习）",
+    minutes: 120,
+    bestFor: "跟老师的进度 + 当场把不懂的问掉",
+    why: "有人可以问的时间最贵。听不懂的当场问，别带回家。",
+  },
+];
+
+export const DAILY_MINUTES = STUDY_BLOCKS.reduce((sum, b) => sum + b.minutes, 0);
+
 export function phaseOn(now: Date): Phase | null {
   const today = toMyDateString(now);
   return PHASES.find((p) => today >= p.start && today <= p.end) ?? null;
