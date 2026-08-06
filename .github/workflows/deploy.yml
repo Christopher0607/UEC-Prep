@@ -19,8 +19,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -32,7 +32,11 @@ jobs:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
       # Pages serves _next/* as-is only if Jekyll is disabled.
       - run: touch out/.nojekyll
+      # enablement turns Pages on via the API if it is off, so the first deploy
+      # does not need someone to flip the switch in Settings by hand.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
