@@ -202,6 +202,75 @@ export function essayPlanPrompt(input: {
   return lines.join("\n");
 }
 
+/**
+ * 应用文 is graded against a fixed 要素 checklist, so the prompt ships that
+ * checklist rather than asking for a general opinion — otherwise the reply is
+ * "写得不错" instead of "你漏了活动名称，扣一分".
+ */
+export function appliedWritingGradePrompt(genre: {
+  name: string;
+  elements: string[];
+  header: string[];
+}, draft: string): string {
+  return [
+    HEADER,
+    "",
+    `科目：华文（试卷一 · 应用文 · ${genre.name}）`,
+    "",
+    `我们老师的${genre.name}要素表（每项独立算分）：`,
+    ...genre.elements.map((e) => `- ${e}`),
+    "",
+    "版头格式要求：",
+    ...genre.header.map((h) => `- ${h}`),
+    "",
+    "【我写的】",
+    draft || "（我接下来发照片）",
+    "",
+    "请你：",
+    "1. 逐项对照要素表，写明「有／无」，无的直接说漏了什么；",
+    "2. 检查版头格式，特别是署名的身份跟题目给的身份是否一致；",
+    "3. 检查段落编号（第 1 段不编号，第 2 段起才编）；",
+    "4. 固定套语用对没有 —— 邀请类和投诉类的预设结果、结尾祈使是不一样的；",
+    "5. 最后给一个估分和「最该改的一件事」。",
+    "",
+    "严格一点，不要放水。这部分是格式分，丢了最冤枉。",
+  ].join("\n");
+}
+
+/** 华文作文 — the outline is where marks are won, same as the English essay. */
+export function chineseEssayOutlinePrompt(input: {
+  topic: string;
+  genre: string;
+  thesis: string;
+  points: string[];
+  materials: string;
+}): string {
+  return [
+    HEADER,
+    "",
+    "科目：华文（试卷一 · 作文）",
+    "",
+    `【题目】${input.topic || "（还没定）"}`,
+    `【我打算写的文体】${input.genre}`,
+    `【中心思想】${input.thesis || "（还没想清楚）"}`,
+    "",
+    "【分论点】",
+    ...input.points.map((p, i) => `${i + 1}. ${p || "（空）"}`),
+    "",
+    "【我打算用的素材】",
+    input.materials || "（还没想好）",
+    "",
+    "请你：",
+    "1. 判断我审题有没有偏 —— 题目真正问的是什么，我写的是不是同一件事；",
+    "2. 我的中心思想够不够明确，能不能一句话说清；",
+    "3. 三个分论点有没有重复、有没有层次（并列还是递进），顺序对不对；",
+    "4. 素材撑不撑得起论点 —— 空泛的例子直接指出来，告诉我换成什么；",
+    "5. 这个题目最容易写成流水账的地方在哪，我该怎么避开。",
+    "",
+    "先只批提纲，不要帮我写正文。",
+  ].join("\n");
+}
+
 /** Paper 2 is five different skills; drilling them as one blurred mass wastes time. */
 export function paper2DrillPrompt(sectionName: string, sectionDetail: string): string {
   return [

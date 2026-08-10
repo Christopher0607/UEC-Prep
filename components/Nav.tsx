@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/mistakes/", label: "错题" },
   { href: "/feynman/", label: "讲题" },
   { href: "/essay/", label: "英文" },
+  { href: "/chinese/", label: "华文" },
   { href: "/flashcards/", label: "背诵" },
   { href: "/papers/", label: "真题" },
   { href: "/data/", label: "备份" },

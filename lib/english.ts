@@ -36,9 +36,10 @@ export const ESSAY_TYPES: EssayType[] = [
 ];
 
 /**
- * The five levels of analysis. The fifth is missing from the student's notes —
- * it is left explicitly unconfirmed rather than filled in with a guess, because
- * writing the wrong level into every essay plan would be worse than a blank.
+ * The five levels of analysis, all five confirmed with the teacher. An essay
+ * that only reaches some of them is capped below the top tier no matter how
+ * well it is written, which is why the planner asks for a note on every level
+ * before the body is drafted.
  */
 export interface AnalysisLevel {
   id: string;
@@ -52,12 +53,7 @@ export const ANALYSIS_LEVELS: AnalysisLevel[] = [
   { id: "family", name: "Family", hint: "对家庭的影响", confirmed: true },
   { id: "community", name: "Community", hint: "对社区／群体的影响", confirmed: true },
   { id: "national", name: "National", hint: "对国家的影响", confirmed: true },
-  {
-    id: "unconfirmed",
-    name: "第五层（待确认）",
-    hint: "你忘了这一层叫什么。按 Individual → Family → Community → National 的递进，下一层通常是 Global／International，但这是我的推测 —— 去跟老师确认，确认后我改进代码里。",
-    confirmed: false,
-  },
+  { id: "global", name: "Global", hint: "对全球／国际的影响", confirmed: true },
 ];
 
 /** Hook → Background → Thesis. The thesis is where the marks are won or lost. */

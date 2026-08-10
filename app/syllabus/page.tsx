@@ -12,6 +12,7 @@ import {
   SubjectSelect,
   Textarea,
 } from "@/components/ui";
+import { CHINESE_SYLLABUS_SEED } from "@/lib/chinese";
 import { ENGLISH_SYLLABUS_SEED } from "@/lib/english";
 import { SUBJECTS, subjectById } from "@/lib/exam";
 import { newId, update, useData } from "@/lib/store";
@@ -84,10 +85,10 @@ export default function SyllabusPage() {
     setDraft("");
   }
 
-  /** English is pre-filled from the student's own teacher, not from guesswork. */
-  function loadEnglishSeed() {
-    setSubjectId("english");
-    setDraft(ENGLISH_SYLLABUS_SEED.map((t) => `${t.section} | ${t.title}`).join("\n"));
+  /** English and Chinese are pre-filled from the student's own teachers, not from guesswork. */
+  function loadSeed(subject: SubjectId, seed: { section: string; title: string }[]) {
+    setSubjectId(subject);
+    setDraft(seed.map((t) => `${t.section} | ${t.title}`).join("\n"));
   }
 
   const mastered = topics.filter((t) => t.mastery === 3).length;
@@ -186,7 +187,12 @@ export default function SyllabusPage() {
           <Button variant="primary" onClick={importDraft} disabled={!draft.trim()}>
             导入到{subjectById(subjectId).name}
           </Button>
-          <Button onClick={loadEnglishSeed}>载入英文考纲（老师版）</Button>
+          <Button onClick={() => loadSeed("english", ENGLISH_SYLLABUS_SEED)}>
+            载入英文考纲（老师版）
+          </Button>
+          <Button onClick={() => loadSeed("chinese", CHINESE_SYLLABUS_SEED)}>
+            载入华文考纲（老师版）
+          </Button>
           <span className="text-xs text-muted-foreground">
             其他科：把考纲发给 Claude，让它整理成这个格式，再贴回来。
           </span>
