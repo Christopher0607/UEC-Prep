@@ -12,7 +12,8 @@ import {
   SubjectSelect,
   Textarea,
 } from "@/components/ui";
-import { A1_THRESHOLD, SUBJECTS } from "@/lib/exam";
+import { A1_THRESHOLD, SUBJECTS, subjectById } from "@/lib/exam";
+import { PAPER_STRUCTURES } from "@/lib/syllabi";
 import { gradePrompt } from "@/lib/prompt";
 import { newId, update, useData } from "@/lib/store";
 import type { PaperAttempt, SubjectId } from "@/lib/types";
@@ -186,6 +187,43 @@ export default function PapersPage() {
           <Button variant="primary" onClick={add} disabled={!form.score.trim()}>
             记下来
           </Button>
+        </div>
+      </Panel>
+
+      <Panel
+        title="试卷结构"
+        subtitle="知道卷子怎么分配分数，才知道时间该怎么分配。"
+      >
+        <div className="space-y-5">
+          {PAPER_STRUCTURES.map((st) => (
+            <div key={st.subjectId}>
+              <h3 className="mb-2 font-semibold">{subjectById(st.subjectId).name}</h3>
+              <div className="space-y-3">
+                {st.papers.map((paper) => (
+                  <div key={paper.name}>
+                    <p className="mb-1 text-sm font-medium text-muted-foreground">{paper.name}</p>
+                    <ul className="space-y-1">
+                      {paper.parts.map((part) => (
+                        <li key={part.name} className="flex flex-wrap gap-x-3 rounded-lg border px-3 py-2 text-sm">
+                          <span className="w-28 shrink-0 font-medium">{part.name}</span>
+                          {part.marks && <span className="tnum text-accent">{part.marks}</span>}
+                          <span className="text-muted-foreground">{part.detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <ul className="mt-3 space-y-1.5">
+                {st.takeaways.map((t) => (
+                  <li key={t} className="flex gap-2 text-sm">
+                    <span className="text-warn">▸</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </Panel>
 

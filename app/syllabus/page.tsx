@@ -14,9 +14,18 @@ import {
 } from "@/components/ui";
 import { CHINESE_SYLLABUS_SEED } from "@/lib/chinese";
 import { ENGLISH_SYLLABUS_SEED } from "@/lib/english";
+import { ACCOUNTING_SYLLABUS_SEED, ECONOMICS_SYLLABUS_SEED } from "@/lib/syllabi";
 import { SUBJECTS, subjectById } from "@/lib/exam";
 import { newId, update, useData } from "@/lib/store";
 import type { Mastery, SubjectId, Topic } from "@/lib/types";
+
+/** Syllabi already transcribed from the student's own textbooks and teachers. */
+const SEEDS: { subject: SubjectId; label: string; data: { section: string; title: string }[] }[] = [
+  { subject: "english", label: "英文考纲", data: ENGLISH_SYLLABUS_SEED },
+  { subject: "chinese", label: "华文考纲", data: CHINESE_SYLLABUS_SEED },
+  { subject: "accounting", label: "会计目录", data: ACCOUNTING_SYLLABUS_SEED },
+  { subject: "economics", label: "经济目录", data: ECONOMICS_SYLLABUS_SEED },
+];
 
 /**
  * Accepts one topic per line, optionally "章节 | 考点". Anything the student can
@@ -187,14 +196,13 @@ export default function SyllabusPage() {
           <Button variant="primary" onClick={importDraft} disabled={!draft.trim()}>
             导入到{subjectById(subjectId).name}
           </Button>
-          <Button onClick={() => loadSeed("english", ENGLISH_SYLLABUS_SEED)}>
-            载入英文考纲（老师版）
-          </Button>
-          <Button onClick={() => loadSeed("chinese", CHINESE_SYLLABUS_SEED)}>
-            载入华文考纲（老师版）
-          </Button>
+          {SEEDS.map((seed) => (
+            <Button key={seed.subject} onClick={() => loadSeed(seed.subject, seed.data)}>
+              载入{seed.label}（{seed.data.length}）
+            </Button>
+          ))}
           <span className="text-xs text-muted-foreground">
-            其他科：把考纲发给 Claude，让它整理成这个格式，再贴回来。
+            数学、高数、商业：把考纲发给 Claude，让它整理成这个格式，再贴回来。
           </span>
         </div>
       </Panel>
