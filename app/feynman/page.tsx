@@ -25,7 +25,7 @@ export default function FeynmanPage() {
   const [explanation, setExplanation] = useState("");
 
   const topics = useMemo(
-    () => data.topics.filter((t) => t.subjectId === subjectId),
+    () => data.topics.filter((t) => t.subjectId === subjectId && !t.skipped),
     [data.topics, subjectId],
   );
   const topic = topics.find((t) => t.id === topicId);

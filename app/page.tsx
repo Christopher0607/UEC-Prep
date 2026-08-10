@@ -19,6 +19,7 @@ import {
 } from "@/lib/exam";
 import { weeklyReviewPrompt } from "@/lib/prompt";
 import { dueCards } from "@/lib/srs";
+import { countTopics } from "@/lib/topics";
 import { useData } from "@/lib/store";
 import type { AppData, SubjectId } from "@/lib/types";
 
@@ -143,9 +144,8 @@ export default function Dashboard() {
         )}
         <ul className="space-y-2">
           {SUBJECTS_BY_DATE.map((subject) => {
-            const topics = data.topics.filter((t) => t.subjectId === subject.id);
-            const mastered = topics.filter((t) => t.mastery === 3).length;
-            const weak = topics.filter((t) => t.mastery <= 1).length;
+            const topics = data.topics.filter((t) => t.subjectId === subject.id && !t.skipped);
+            const { mastered, weak } = countTopics(topics);
             const score = currentScore(data, subject.id);
             const gap = score ? Math.max(0, A1_THRESHOLD - score.value) : null;
             const mistakes = openMistakes.filter((m) => m.subjectId === subject.id).length;

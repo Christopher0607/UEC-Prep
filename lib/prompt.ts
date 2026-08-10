@@ -302,7 +302,7 @@ export function weeklyReviewPrompt(data: AppData): string {
     ]),
   ) as SubjectId[]) {
     const subject = subjectById(subjectId);
-    const topics = data.topics.filter((t) => t.subjectId === subjectId);
+    const topics = data.topics.filter((t) => t.subjectId === subjectId && !t.skipped);
     const weak = topics.filter((t) => t.mastery <= 1);
     const papers = data.papers
       .filter((p) => p.subjectId === subjectId)

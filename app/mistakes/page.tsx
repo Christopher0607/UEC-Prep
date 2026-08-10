@@ -48,7 +48,7 @@ export default function MistakesPage() {
   const [hintSubject, setHintSubject] = useState<SubjectId>("advmath");
   const [hintQuestion, setHintQuestion] = useState("");
 
-  const topicsForForm = data.topics.filter((t) => t.subjectId === form.subjectId);
+  const topicsForForm = data.topics.filter((t) => t.subjectId === form.subjectId && !t.skipped);
 
   const visible = useMemo(() => {
     return data.mistakes

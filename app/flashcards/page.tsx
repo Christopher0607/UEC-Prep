@@ -70,7 +70,7 @@ export default function FlashcardsPage() {
   }
 
   const weakTopics = data.topics
-    .filter((t) => t.subjectId === subjectId && t.mastery <= 1)
+    .filter((t) => t.subjectId === subjectId && t.mastery <= 1 && !t.skipped)
     .map((t) => t.title);
 
   return (

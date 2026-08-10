@@ -16,10 +16,20 @@ export type MistakeCause = "concept" | "method" | "careless" | "time";
 export interface Topic {
   id: string;
   subjectId: SubjectId;
-  /** Chapter / 单元 the topic belongs to, straight from the 考纲. */
+  /**
+   * Where the topic sits in the book, as "组 · 章" (e.g. "Book 1 · 5 Double
+   * entry bookkeeping"). The " · " separator is what the coverage table splits
+   * on to build its collapsible tree, so keep it when seeding syllabi.
+   */
   section: string;
   title: string;
   mastery: Mastery;
+  /**
+   * Out of scope — not on the syllabus, already dropped, or simply not worth
+   * revising. Hidden by default and excluded from every count, so a 96-topic
+   * subject stays usable instead of permanently showing an unreachable total.
+   */
+  skipped?: boolean;
   /** How often this topic showed up in past papers, filled in by hand. */
   frequency: number;
   updatedAt: string;
