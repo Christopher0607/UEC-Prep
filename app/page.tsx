@@ -11,6 +11,9 @@ import {
   STUDY_BLOCKS,
   RESULTS_DAY,
   SUBJECTS_BY_DATE,
+  TRIAL_EXAMS,
+  TRIAL_NOTES,
+  TRIAL_START,
   daysUntil,
   examDate,
   formatExamDay,
@@ -90,6 +93,46 @@ export default function Dashboard() {
           </ol>
         </Panel>
       )}
+
+      <Panel
+        title="校内预考 · 9/7 – 9/19"
+        subtitle={`还有 ${daysUntil(TRIAL_START, now)} 天 · 预试一律不给补考`}
+      >
+        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+          这是统考前<strong className="text-foreground">唯一一次别人替你严格计时和批改</strong>的机会。
+          但注意：预考把考试摊在十二天里、中间还有休息日，
+          <strong className="text-foreground">统考却是 48 小时内考掉四科</strong>。
+          预考考得好，不代表你扛得住统考那个密度。
+        </p>
+        <ul className="space-y-1.5">
+          {TRIAL_EXAMS.map((t) => {
+            const subject = t.subjectId
+              ? SUBJECTS_BY_DATE.find((s) => s.id === t.subjectId)
+              : null;
+            return (
+              <li
+                key={t.date}
+                className={`flex flex-wrap items-baseline gap-x-3 rounded-lg border px-3 py-2 text-sm ${
+                  t.slots.length ? "" : "opacity-55"
+                }`}
+              >
+                <span className="w-24 shrink-0 tnum text-muted-foreground">
+                  {t.date.slice(5).replace("-", "/")}（{t.weekday}）
+                </span>
+                <span className="w-20 shrink-0 font-medium">{subject?.name ?? t.label}</span>
+                <span className="text-muted-foreground">
+                  {t.slots.length ? t.slots.join("　·　") : "整天可用来复习"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+          {TRIAL_NOTES.map((n) => (
+            <li key={n}>· {n}</li>
+          ))}
+        </ul>
+      </Panel>
 
       <Panel
         title="每天的时间块"

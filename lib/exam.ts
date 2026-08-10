@@ -22,18 +22,65 @@ export interface Subject {
   /** Mid-year report card average, coursework included (so: optimistic). */
   baseline: number | null;
   short: string;
+  /**
+   * Minutes for 卷一 and 卷二, taken from 坤成中学 2026 预试时间表 (Sr3Com column).
+   * The trial mirrors the real paper lengths, so these are the numbers to set a
+   * timer to when doing past papers — practising "roughly an hour" trains the
+   * wrong pace.
+   */
+  minutes: [number, number];
 }
 
 export const A1_THRESHOLD = 80;
 
 export const SUBJECTS: Subject[] = [
-  { id: "english", name: "英文", medium: "英文", date: "2026-10-21", session: "上午", baseline: 61, short: "英" },
-  { id: "accounting", name: "会计学", medium: "英文", date: "2026-10-21", session: "下午", baseline: 77, short: "会" },
-  { id: "chinese", name: "华文", medium: "中文", date: "2026-10-22", session: "上午", baseline: 64, short: "华" },
-  { id: "economics", name: "经济学", medium: "中文", date: "2026-10-22", session: "下午", baseline: 80, short: "经" },
-  { id: "math", name: "数学", medium: "英文", date: "2026-10-23", session: "上午", baseline: null, short: "数" },
-  { id: "business", name: "商业学", medium: "中文", date: "2026-10-24", session: "下午", baseline: 70, short: "商" },
-  { id: "advmath", name: "高级数学", medium: "英文", date: "2026-10-27", session: "上午", baseline: 69, short: "高" },
+  { id: "english", name: "英文", medium: "英文", date: "2026-10-21", session: "上午", baseline: 61, short: "英", minutes: [100, 80] },
+  { id: "accounting", name: "会计学", medium: "英文", date: "2026-10-21", session: "下午", baseline: 77, short: "会", minutes: [30, 180] },
+  { id: "chinese", name: "华文", medium: "中文", date: "2026-10-22", session: "上午", baseline: 64, short: "华", minutes: [105, 105] },
+  { id: "economics", name: "经济学", medium: "中文", date: "2026-10-22", session: "下午", baseline: 80, short: "经", minutes: [45, 150] },
+  { id: "math", name: "数学", medium: "英文", date: "2026-10-23", session: "上午", baseline: null, short: "数", minutes: [60, 120] },
+  { id: "business", name: "商业学", medium: "中文", date: "2026-10-24", session: "下午", baseline: 70, short: "商", minutes: [50, 120] },
+  { id: "advmath", name: "高级数学", medium: "英文", date: "2026-10-27", session: "上午", baseline: 69, short: "高", minutes: [60, 120] },
+];
+
+/**
+ * 坤成中学 2026 统考预试, Sr3Com column. 预试一律不给予补考.
+ *
+ * Worth noting how differently it is spread: the trial gives a rest day between
+ * most papers, while the real UEC sits four subjects inside 48 hours. Doing well
+ * here does not prove you can survive that density.
+ */
+export interface TrialExam {
+  date: string;
+  weekday: string;
+  subjectId: SubjectId | null;
+  /** Trial-only subject label when it maps to no registered UEC subject. */
+  label?: string;
+  slots: string[];
+}
+
+export const TRIAL_EXAMS: TrialExam[] = [
+  { date: "2026-09-07", weekday: "一", subjectId: "economics", slots: ["8:15–9:00 卷一 45min", "9:15–11:45 卷二 2hr30"] },
+  { date: "2026-09-08", weekday: "二", subjectId: "english", slots: ["8:15–9:55 卷一 1hr40", "10:10–11:30 卷二 1hr20"] },
+  { date: "2026-09-09", weekday: "三", subjectId: "advmath", slots: ["8:15–9:15 卷一 1hr", "9:30–11:30 卷二 2hr"] },
+  { date: "2026-09-10", weekday: "四", subjectId: "business", slots: ["8:15–9:05 卷一 50min", "9:10–11:10 卷二 2hr"] },
+  { date: "2026-09-11", weekday: "五", subjectId: "chinese", slots: ["8:15–10:00 卷一 1hr45", "10:15–12:00 卷二 1hr45"] },
+  // BM is on the Sr3Com timetable but not a subject this student sits, so the
+  // whole day is free — and 12–13/9, 15–16/9 and 19/9 are already 居家备考.
+  { date: "2026-09-14", weekday: "一", subjectId: null, label: "BM（我不考）— 整天空档", slots: [] },
+  { date: "2026-09-17", weekday: "四", subjectId: "accounting", slots: ["8:15–8:45 卷一 30min", "9:00–12:00 卷二 3hr"] },
+  { date: "2026-09-18", weekday: "五", subjectId: "math", slots: ["8:15–9:15 卷一 1hr", "9:30–11:30 卷二 2hr"] },
+];
+
+export const TRIAL_START = new Date(`2026-09-07T08:15:00${MY_OFFSET}`);
+
+/** Rules off the timetable that cost marks if forgotten. */
+export const TRIAL_NOTES = [
+  "预试一律不给予补考 —— 缺考就是零分，没有第二次。",
+  "卷一与卷二之间有 15 分钟暂停。卷一收齐后可暂离考场，但必须在卷二开考前 5 分钟回场填答案卡。",
+  "允许的计算机型号：Casio fx-570ms / fx-350ms / fx-991MS（含 -2 版）、Canon F-788SG / F-570SG、Olympia ES-570MS / -3e、基本计算机。",
+  "禁带智能手表、手环、可擦拭原子笔、铅笔盒、印章、涂改液、水壶套。身份证放桌面左上角。",
+  "考试不超过 90 分钟的场次不准上洗手间。",
 ];
 
 export function subjectById(id: SubjectId): Subject {
@@ -75,21 +122,28 @@ export const PHASES: Phase[] = [
     name: "诊断期",
     start: "2026-08-06",
     end: "2026-08-16",
-    goal: "每科限时做一套真题，拿到不含作业分的真实基线。不知道起点，后面全是瞎猜。",
+    goal: "每科限时做一套历届真题，拿到不含作业分的真实基线。不知道起点，后面全是瞎猜。",
   },
   {
     key: "gaps",
-    name: "补洞期",
+    name: "补洞期（一）· 预考前",
     start: "2026-08-17",
-    end: "2026-09-20",
-    goal: "按考点覆盖表逐个清盲区，把掌握度推到 3。英文每天不断。",
+    end: "2026-09-06",
+    goal: "三周，按考点覆盖表清盲区。目标不是「学完」，是让预考量出一个值得参考的成绩。",
   },
   {
-    key: "drill",
-    name: "刷卷期",
-    start: "2026-09-21",
+    key: "trial",
+    name: "校内预考",
+    start: "2026-09-07",
+    end: "2026-09-19",
+    goal: "全真环境、不给补考。这是统考前唯一一次别人替你严格计时和批改的机会 —— 当成真的考。",
+  },
+  {
+    key: "gaps2",
+    name: "补洞期（二）· 按预考结果",
+    start: "2026-09-20",
     end: "2026-10-12",
-    goal: "全真限时模考，每科 3–5 套。练的是步骤分和时间分配，不是新知识。",
+    goal: "三周，照预考丢分的地方重排优先级。这一段的计划要等成绩出来才定，现在别提前锁死。",
   },
   {
     key: "consolidate",
@@ -100,7 +154,7 @@ export const PHASES: Phase[] = [
   },
   {
     key: "exam",
-    name: "考试周",
+    name: "统考周",
     start: "2026-10-21",
     end: "2026-10-27",
     goal: "头两天考掉四科。剩下数学、商业、高数有缓冲，考完一科立刻切换。",

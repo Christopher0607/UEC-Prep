@@ -13,6 +13,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { A1_THRESHOLD, SUBJECTS, subjectById } from "@/lib/exam";
+import type { Subject } from "@/lib/exam";
 import { PAPER_STRUCTURES } from "@/lib/syllabi";
 import { gradePrompt } from "@/lib/prompt";
 import { newId, update, useData } from "@/lib/store";
@@ -77,6 +78,11 @@ export default function PapersPage() {
     update((d) => ({ ...d, papers: d.papers.filter((p) => p.id !== id) }));
   }
 
+  /** One click beats looking the duration up every time you sit a paper. */
+  function fillDuration(subject: Subject, which: 0 | 1) {
+    setForm((f) => ({ ...f, minutesAllowed: String(subject.minutes[which]) }));
+  }
+
   return (
     <div className="space-y-4">
       <Panel
@@ -139,13 +145,28 @@ export default function PapersPage() {
               onChange={(e) => setForm({ ...form, minutesTaken: e.target.value })}
             />
           </Field>
-          <Field label="规定时间（分钟）">
+          <Field label="规定时间（分钟）" hint="按下面的按钮填入真实考试时长">
             <Input
               inputMode="numeric"
               value={form.minutesAllowed}
               onChange={(e) => setForm({ ...form, minutesAllowed: e.target.value })}
             />
           </Field>
+        </div>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">
+            {subjectById(form.subjectId).name}真实时长：
+          </span>
+          {([0, 1] as const).map((which) => (
+            <button
+              key={which}
+              onClick={() => fillDuration(subjectById(form.subjectId), which)}
+              className="rounded-lg border px-2.5 py-1 tnum transition hover:bg-surface-2"
+            >
+              卷{which === 0 ? "一" : "二"} {subjectById(form.subjectId).minutes[which]} 分钟
+            </button>
+          ))}
         </div>
 
         <p className="mt-4 mb-2 text-sm font-medium">丢的分，按原因拆开</p>
