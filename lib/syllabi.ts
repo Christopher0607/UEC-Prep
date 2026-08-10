@@ -168,9 +168,17 @@ export const ACCOUNTING_SYLLABUS_SEED = [
 ];
 
 /**
- * 经济学上册。章节号照课本 —— 注意《试题分类集》把「生产要素市场」排到了
- * 第 11 章，跟课本的第 6 章不一样。用分类集找题时按名字找，别按章号找。
+ * 《试题分类集》的上册章号跟课本对不上：从第 6 章起整个错位。课本是最新版，
+ * 所以覆盖表以课本为准，但每章并排标出分类集的章号 —— 拿分类集刷题时不用
+ * 再回头换算，也不会刷错单元。键 = 课本章号，值 = 分类集章号。
  */
+const CLASSIFIER_CHAPTER: Record<number, number> = {
+  1: 1, 2: 2, 3: 3, 4: 4, 5: 5,
+  6: 11, // 生产要素市场 —— 分类集把它挪到了最后
+  7: 6, 8: 7, 9: 8, 10: 9, 11: 10,
+};
+
+/** 经济学上册。章节名与编号照课本原文。 */
 const ECON_VOL1: [string, string[]][] = [
   ["第1章 绪论", [
     "1.1 经济学成立的历史背景",
@@ -271,9 +279,16 @@ const ECON_VOL2_CHAPTERS = [
   "第10章 国际收支",
 ];
 
+/** 「第7章 生产与成本」→「第7章 生产与成本（分类集 第6章）」 */
+function withClassifier(chapter: string): string {
+  const n = Number(chapter.match(/^第(\d+)章/)?.[1]);
+  const alt = CLASSIFIER_CHAPTER[n];
+  return alt && alt !== n ? `${chapter}（分类集 第${alt}章）` : chapter;
+}
+
 export const ECONOMICS_SYLLABUS_SEED = [
   ...ECON_VOL1.flatMap(([chapter, sections]) =>
-    sections.map((s) => ({ section: `上册 · ${chapter}`, title: s })),
+    sections.map((s) => ({ section: `上册 · ${withClassifier(chapter)}`, title: s })),
   ),
   ...ECON_VOL2_CHAPTERS.map((c) => ({ section: "下册", title: c })),
 ];
@@ -321,7 +336,7 @@ export const PAPER_STRUCTURES: PaperStructure[] = [
         parts: [{ name: "选择题", marks: "30 分", detail: "30 题，每题 1 分" }],
       },
       {
-        name: "试卷二（70 分）",
+        name: "试卷二（70 分）· 全部必答",
         parts: [
           { name: "上册 · 短答", marks: "15 分", detail: "5 / 5 / 5 三题" },
           { name: "上册 · 长答", marks: "20 分", detail: "2 题，每题 10 分" },
@@ -331,9 +346,10 @@ export const PAPER_STRUCTURES: PaperStructure[] = [
       },
     ],
     takeaways: [
+      "试卷二全部必答，没有选答。所以 21 章一章都不能放弃 —— 这一科没有任何战略性取舍的空间，只能全覆盖。",
       "上册 35 分、下册 35 分，完全等重。下册（宏观）不是附属品，是半壁江山。",
       "选择题 30 分占全科 30% —— 是整科最便宜的分，值得单独刷。",
-      "《试题分类集》的上册章号跟课本不一样（它把「生产要素市场」排成第 11 章，课本是第 6 章）。用分类集找题按章名找，别按章号找。",
+      "覆盖表按课本章号排（课本是最新版），每章后面并排标了《试题分类集》的章号，拿分类集刷题时直接对照，不用换算。",
     ],
   },
 ];
