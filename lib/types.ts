@@ -86,12 +86,44 @@ export interface PaperAttempt {
   takenAt: string;
 }
 
+export interface EssayHeading {
+  text: string;
+  /** One heading targets one level of analysis. Three headings, three levels. */
+  level: string;
+  /** How this heading will be developed at that level. */
+  plan: string;
+}
+
+/**
+ * A saved essay plan. Plans chain into revisions so v1 and v2 of the same
+ * question sit together — without that, "我改进了吗" has no answer, and the
+ * work of replanning the same topic three times leaves no trace.
+ */
+export interface EssayPlan {
+  id: string;
+  subjectId: SubjectId;
+  essayType: string;
+  topic: string;
+  hook: string;
+  background: string;
+  thesis: string;
+  headings: EssayHeading[];
+  /** Filled in after Claude or a teacher marks it — this is the trend line. */
+  grammarErrors?: number;
+  score?: number;
+  feedback?: string;
+  /** id of the plan this one revises, so versions of a topic stay linked. */
+  revisionOf?: string;
+  createdAt: string;
+}
+
 export interface AppData {
   version: number;
   topics: Topic[];
   mistakes: Mistake[];
   cards: Card[];
   papers: PaperAttempt[];
+  essays: EssayPlan[];
   /** Baseline from the mid-year report card, used until a real paper score exists. */
   baselines: Partial<Record<SubjectId, number>>;
   updatedAt: string;

@@ -35,25 +35,54 @@ export const ESSAY_TYPES: EssayType[] = [
   },
 ];
 
+export type AnalysisLevelId =
+  | "individual"
+  | "family"
+  | "community"
+  | "national"
+  | "global";
+
 /**
- * The five levels of analysis, all five confirmed with the teacher. An essay
- * that only reaches some of them is capped below the top tier no matter how
- * well it is written, which is why the planner asks for a note on every level
- * before the body is drafted.
+ * The five levels of analysis. **One heading targets one level** — the five are
+ * a menu to pick three from, not a checklist to exhaust inside every heading.
+ *
+ * What the rule actually guards against is an essay that sits entirely at one
+ * level ("说明不可以只偏向一个主体"), so the planner checks that the three
+ * headings land on three *different* levels rather than demanding all five.
  */
 export interface AnalysisLevel {
-  id: string;
+  id: AnalysisLevelId;
   name: string;
   hint: string;
-  confirmed: boolean;
+  /** Rough scale order, used to suggest a clean escalation across headings. */
+  rank: number;
 }
 
 export const ANALYSIS_LEVELS: AnalysisLevel[] = [
-  { id: "individual", name: "Individual", hint: "对个人本身的影响", confirmed: true },
-  { id: "family", name: "Family", hint: "对家庭的影响", confirmed: true },
-  { id: "community", name: "Community", hint: "对社区／群体的影响", confirmed: true },
-  { id: "national", name: "National", hint: "对国家的影响", confirmed: true },
-  { id: "global", name: "Global", hint: "对全球／国际的影响", confirmed: true },
+  { id: "individual", name: "Individual", hint: "对个人本身的影响", rank: 1 },
+  { id: "family", name: "Family", hint: "对家庭的影响", rank: 2 },
+  { id: "community", name: "Community", hint: "对社区／群体的影响", rank: 3 },
+  { id: "national", name: "National", hint: "对国家的影响", rank: 4 },
+  { id: "global", name: "Global", hint: "对全球／国际的影响", rank: 5 },
+];
+
+export function levelById(id: string): AnalysisLevel | undefined {
+  return ANALYSIS_LEVELS.find((l) => l.id === id);
+}
+
+/**
+ * Grammar slips pulled from the student's own marked work. These four
+ * categories accounted for most of the errors in the first graded plan, and
+ * they are the same ones Paper 2 Section 4 (Identify Error) tests — so drilling
+ * them pays twice.
+ */
+export const GRAMMAR_TRAPS: { name: string; wrong: string; right: string }[] = [
+  { name: "单复数", wrong: "individual must be open-minded", right: "individual**s** must be open-minded" },
+  { name: "主谓一致", wrong: "we should always helps / who is in difficult situations", right: "we should always help / who **are** in difficult situations" },
+  { name: "冠词漏写", wrong: "have right to choose / think out of box", right: "have **the** right to choose / think outside **the** box" },
+  { name: "介词搭配", wrong: "make jokes of others / give a hand on our neighbour", right: "make jokes **about** others / lend a hand **to** our neighbours" },
+  { name: "近形词混用", wrong: "As a good residence（住宅）", right: "As good **residents**（居民）" },
+  { name: "不可数名词", wrong: "works from educations", right: "through **education**" },
 ];
 
 /** Hook → Background → Thesis. The thesis is where the marks are won or lost. */
@@ -75,6 +104,33 @@ export interface ThesisCheck {
  * invented or dropped. Grammar still needs a human (or Claude) — this only
  * catches the structural failures, which are the ones that cost whole bands.
  */
+/**
+ * Three headings on three different levels is what "不可以只偏向一个主体"
+ * actually asks for. Two headings sharing a level is the failure mode.
+ */
+export function checkLevelSpread(levels: string[]): ThesisCheck {
+  const chosen = levels.filter(Boolean);
+  const unique = new Set(chosen);
+  if (chosen.length < 3) {
+    return {
+      rule: "三个标题落在三个不同层次",
+      pass: false,
+      detail: `还有 ${3 - chosen.length} 个标题没选层次。`,
+    };
+  }
+  if (unique.size < chosen.length) {
+    const dupes = chosen.filter((l, i) => chosen.indexOf(l) !== i);
+    const names = [...new Set(dupes)].map((d) => levelById(d)?.name ?? d).join("、");
+    return {
+      rule: "三个标题落在三个不同层次",
+      pass: false,
+      detail: `${names} 被用了两次 —— 整篇偏向同一个主体，拿不到最高 tier。换一个层次。`,
+    };
+  }
+  const names = chosen.map((l) => levelById(l)?.name ?? l).join(" → ");
+  return { rule: "三个标题落在三个不同层次", pass: true, detail: names };
+}
+
 export function checkThesis(thesis: string, headings: string[]): ThesisCheck[] {
   const text = thesis.trim();
   const named = headings.filter((h) => h.trim());
@@ -108,10 +164,13 @@ export function checkThesis(thesis: string, headings: string[]): ThesisCheck[] {
             : `thesis 里找不到：${missing.join("、")}。写错标题或漏标题都会扣分。`,
     },
     {
-      rule: "标题要够广，撑得起五个层次",
+      // Parallel structure is the single most common way a list-form thesis
+      // loses marks, and it cannot be checked reliably by string matching —
+      // "accept / helping / works" is three different grammatical forms.
+      rule: "三项必须同一语法形式（平行结构）",
       pass: false,
       detail:
-        "这条机器判断不了 —— 每个标题都必须能从 Individual 讲到最高层。用下面的按钮让 Claude 逐个标题检查。",
+        "机器判断不了。三项要么都是动名词（accepting / supporting / strengthening），要么都是名词短语 —— 混用一眼就被看出来。最后一项前面别忘了 and。",
     },
   ];
 }
