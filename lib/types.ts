@@ -88,11 +88,19 @@ export interface PaperAttempt {
 
 export interface EssayHeading {
   text: string;
-  /** One heading targets one level of analysis. Three headings, three levels. */
+  /** Only used in "perHeading" mode — the one level this heading targets. */
   level: string;
-  /** How this heading will be developed at that level. */
+  /** How this heading will be developed. */
   plan: string;
 }
+
+/**
+ * How the 5 Levels of Analysis are applied. The rule has been read both ways,
+ * so both are supported rather than hard-coding a guess:
+ *  - "five": the essay covers all five levels; plan a note for each.
+ *  - "perHeading": each heading targets one level, three headings, three levels.
+ */
+export type LevelMode = "five" | "perHeading";
 
 /**
  * A saved essay plan. Plans chain into revisions so v1 and v2 of the same
@@ -108,6 +116,9 @@ export interface EssayPlan {
   background: string;
   thesis: string;
   headings: EssayHeading[];
+  levelMode: LevelMode;
+  /** "five" mode only: how each of the five levels will be brought in. */
+  levelNotes?: Record<string, string>;
   /** Filled in after Claude or a teacher marks it — this is the trend line. */
   grammarErrors?: number;
   score?: number;

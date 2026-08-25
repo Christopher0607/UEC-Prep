@@ -17,13 +17,14 @@ import {
   ESSAY_TYPES,
   GRAMMAR_TRAPS,
   PAPER2_SECTIONS,
+  checkFiveLevels,
   checkLevelSpread,
   checkThesis,
   levelById,
 } from "@/lib/english";
 import { essayPlanPrompt, paper2DrillPrompt } from "@/lib/prompt";
 import { newId, update, useData } from "@/lib/store";
-import type { EssayHeading, EssayPlan } from "@/lib/types";
+import type { EssayHeading, EssayPlan, LevelMode } from "@/lib/types";
 
 const BLANK_HEADINGS: EssayHeading[] = [
   { text: "", level: "", plan: "" },
@@ -38,6 +39,8 @@ interface Draft {
   background: string;
   thesis: string;
   headings: EssayHeading[];
+  levelMode: LevelMode;
+  levelNotes: Record<string, string>;
   revisionOf?: string;
 }
 
@@ -48,6 +51,14 @@ const EMPTY: Draft = {
   background: "",
   thesis: "",
   headings: BLANK_HEADINGS,
+  // The teacher's rule has been read both ways; "five" is the current one.
+  levelMode: "five",
+  levelNotes: {},
+};
+
+const MODE_LABEL: Record<LevelMode, string> = {
+  five: "五层全覆盖",
+  perHeading: "一标题一层",
 };
 
 export default function EssayPage() {
@@ -59,7 +70,10 @@ export default function EssayPage() {
     draft.thesis,
     draft.headings.map((h) => h.text),
   );
-  const spread = checkLevelSpread(draft.headings.map((h) => h.level));
+  const levelCheck =
+    draft.levelMode === "five"
+      ? checkFiveLevels(draft.levelNotes)
+      : checkLevelSpread(draft.headings.map((h) => h.level));
 
   const plans = useMemo(
     () =>
@@ -111,6 +125,8 @@ export default function EssayPage() {
       background: draft.background.trim(),
       thesis: draft.thesis.trim(),
       headings: draft.headings,
+      levelMode: draft.levelMode,
+      levelNotes: draft.levelMode === "five" ? draft.levelNotes : undefined,
       revisionOf: draft.revisionOf,
       createdAt: new Date().toISOString(),
     };
@@ -126,6 +142,8 @@ export default function EssayPage() {
       background: plan.background,
       thesis: plan.thesis,
       headings: plan.headings.length ? plan.headings : BLANK_HEADINGS,
+      levelMode: plan.levelMode ?? "five",
+      levelNotes: plan.levelNotes ?? {},
       revisionOf: plan.id,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -186,6 +204,31 @@ export default function EssayPage() {
         <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-sm">
           <strong>{essayType.name}</strong>：{essayType.demand}
         </p>
+
+        {/* The rule has flip-flopped; a switch beats rewriting the page again. */}
+        <div className="mt-4">
+          <p className="mb-1.5 text-sm font-medium">5 Levels 怎么用</p>
+          <div className="flex flex-wrap gap-2">
+            {(["five", "perHeading"] as LevelMode[]).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setDraft((d) => ({ ...d, levelMode: mode }))}
+                className={`rounded-lg border px-3 py-1.5 text-sm transition ${
+                  draft.levelMode === mode
+                    ? "border-accent bg-accent text-accent-foreground"
+                    : "hover:bg-surface-2"
+                }`}
+              >
+                {MODE_LABEL[mode]}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {draft.levelMode === "five"
+              ? "整篇覆盖 Individual → Family → Community → National → Global 五层，每层都要带到。"
+              : "三个标题各对应一个层次，落在三个不同的层次上。"}
+          </p>
+        </div>
       </Panel>
 
       <Panel title="开头三件套" subtitle="Hook → Background information → Thesis Statement">
@@ -218,7 +261,7 @@ export default function EssayPage() {
 
         <ClientOnly>
           <ul className="mt-3 space-y-1.5">
-            {[...checks, spread].map((c) => (
+            {[...checks, levelCheck].map((c) => (
               <li key={c.rule} className="flex gap-2 text-sm">
                 <span className={c.pass ? "text-ok" : "text-warn"}>{c.pass ? "✓" : "!"}</span>
                 <span>
@@ -233,30 +276,51 @@ export default function EssayPage() {
 
       <Panel
         title="三个大标题"
-        subtitle="一个标题对一个层次。三个标题必须落在三个不同的层次上 —— 整篇不能只偏向一个主体。"
+        subtitle={
+          draft.levelMode === "five"
+            ? "每个标题都要够广 —— 广到能从 Individual 一路铺到 Global。"
+            : "一个标题对一个层次。三个标题必须落在三个不同的层次上。"
+        }
       >
         <div className="space-y-4">
           {draft.headings.map((h, i) => (
             <div key={i} className="rounded-xl border p-3">
-              <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
+              <div
+                className={
+                  draft.levelMode === "perHeading"
+                    ? "grid gap-3 sm:grid-cols-[1fr_180px]"
+                    : undefined
+                }
+              >
                 <Field label={`标题 ${i + 1}`}>
                   <Input value={h.text} onChange={(e) => setHeading(i, { text: e.target.value })} />
                 </Field>
-                <Field label="对应层次">
-                  <Select value={h.level} onChange={(e) => setHeading(i, { level: e.target.value })}>
-                    <option value="">（未选）</option>
-                    {ANALYSIS_LEVELS.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.name}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
+                {draft.levelMode === "perHeading" && (
+                  <Field label="对应层次">
+                    <Select
+                      value={h.level}
+                      onChange={(e) => setHeading(i, { level: e.target.value })}
+                    >
+                      <option value="">（未选）</option>
+                      {ANALYSIS_LEVELS.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          {l.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                )}
               </div>
               <div className="mt-3">
                 <Field
                   label="打算怎么写"
-                  hint={h.level ? levelById(h.level)?.hint : "先选层次"}
+                  hint={
+                    draft.levelMode === "perHeading"
+                      ? h.level
+                        ? levelById(h.level)?.hint
+                        : "先选层次"
+                      : "这个标题下面要讲什么"
+                  }
                 >
                   <Textarea
                     rows={3}
@@ -268,8 +332,35 @@ export default function EssayPage() {
             </div>
           ))}
         </div>
+      </Panel>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+      {draft.levelMode === "five" && (
+        <Panel
+          title="5 Levels of Analysis"
+          subtitle="说明不能只偏向一个主体。五层都要带到，才拿得到最高 tier。"
+        >
+          <div className="space-y-3">
+            {ANALYSIS_LEVELS.map((level) => (
+              <Field key={level.id} label={level.name} hint={level.hint}>
+                <Textarea
+                  rows={2}
+                  value={draft.levelNotes[level.id] ?? ""}
+                  onChange={(e) =>
+                    setDraft((d) => ({
+                      ...d,
+                      levelNotes: { ...d.levelNotes, [level.id]: e.target.value },
+                    }))
+                  }
+                  placeholder="这一层打算怎么带到？"
+                />
+              </Field>
+            ))}
+          </div>
+        </Panel>
+      )}
+
+      <Panel title="批改与保存">
+        <div className="flex flex-wrap items-center gap-3">
           <CopyPrompt
             build={() =>
               essayPlanPrompt({
@@ -284,6 +375,10 @@ export default function EssayPage() {
                   levelName: levelById(h.level)?.name ?? "",
                   plan: h.plan,
                 })),
+                levelMode: draft.levelMode,
+                levelNotes: ANALYSIS_LEVELS.map(
+                  (l) => [l.name, draft.levelNotes[l.id] ?? ""] as [string, string],
+                ),
                 previous: previous
                   ? { thesis: previous.thesis, grammarErrors: previous.grammarErrors }
                   : undefined,
@@ -345,14 +440,28 @@ export default function EssayPage() {
                           <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
                             <span className="font-medium text-foreground">v{i + 1}</span>
                             <span className="tnum">{p.createdAt.slice(0, 10)}</span>
-                            {p.headings.map(
-                              (h) =>
-                                h.level && (
-                                  <span key={h.level} className="rounded bg-surface-2 px-1.5 py-0.5">
-                                    {levelById(h.level)?.name}
-                                  </span>
-                                ),
-                            )}
+                            <span className="rounded bg-surface-2 px-1.5 py-0.5">
+                              {MODE_LABEL[p.levelMode ?? "five"]}
+                            </span>
+                            {(p.levelMode ?? "five") === "five"
+                              ? ANALYSIS_LEVELS.filter((l) => p.levelNotes?.[l.id]?.trim()).map(
+                                  (l) => (
+                                    <span key={l.id} className="rounded bg-surface-2 px-1.5 py-0.5">
+                                      {l.name}
+                                    </span>
+                                  ),
+                                )
+                              : p.headings.map(
+                                  (h) =>
+                                    h.level && (
+                                      <span
+                                        key={h.level}
+                                        className="rounded bg-surface-2 px-1.5 py-0.5"
+                                      >
+                                        {levelById(h.level)?.name}
+                                      </span>
+                                    ),
+                                )}
                           </div>
                           <p className="mt-1.5 text-sm">{p.thesis || "（thesis 空白）"}</p>
 

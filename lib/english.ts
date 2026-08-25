@@ -104,9 +104,21 @@ export interface ThesisCheck {
  * invented or dropped. Grammar still needs a human (or Claude) — this only
  * catches the structural failures, which are the ones that cost whole bands.
  */
+/** "five" mode: every level needs a plan, or the essay is capped below top tier. */
+export function checkFiveLevels(notes: Record<string, string>): ThesisCheck {
+  const missing = ANALYSIS_LEVELS.filter((l) => !notes[l.id]?.trim());
+  return {
+    rule: "五个层次全部要带到",
+    pass: missing.length === 0,
+    detail: missing.length
+      ? `还差 ${missing.map((l) => l.name).join("、")} —— 少一层就上不了最高 tier。`
+      : "五层齐全。",
+  };
+}
+
 /**
- * Three headings on three different levels is what "不可以只偏向一个主体"
- * actually asks for. Two headings sharing a level is the failure mode.
+ * "perHeading" mode: three headings on three different levels is what
+ * "不可以只偏向一个主体" asks for. Two headings sharing a level is the failure.
  */
 export function checkLevelSpread(levels: string[]): ThesisCheck {
   const chosen = levels.filter(Boolean);

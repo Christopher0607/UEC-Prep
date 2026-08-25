@@ -154,6 +154,10 @@ export function essayPlanPrompt(input: {
   background: string;
   thesis: string;
   headings: { text: string; levelName: string; plan: string }[];
+  /** Which reading of the 5-levels rule this plan follows. */
+  levelMode: "five" | "perHeading";
+  /** "five" mode: [层次名, 打算怎么带到]. */
+  levelNotes?: [string, string][];
   /** Previous version of the same plan, so the reply can say what improved. */
   previous?: { thesis: string; grammarErrors?: number };
 }): string {
@@ -170,7 +174,9 @@ export function essayPlanPrompt(input: {
     "- 不能写错标题（thesis 里的标题必须和正文标题完全对得上）",
     "- 三项要平行结构（同一语法形式），最后一项前面要有 and",
     "",
-    "**内容要求**：一个大标题对应一个层次的分析，三个标题要落在三个**不同**的层次上（Individual / Family / Community / National / Global）。重点是整篇不能只偏向一个主体 —— 不是要在一个标题里塞满五个层次。",
+    input.levelMode === "five"
+      ? "**内容要求**：正文不能只偏向一个主体。展开时要覆盖到 5 Levels of Analysis 的全部五层 —— Individual / Family / Community / National / Global，覆盖得全才拿得到最高 tier。"
+      : "**内容要求**：一个大标题对应一个层次的分析，三个标题要落在三个**不同**的层次上（Individual / Family / Community / National / Global）。重点是整篇不能只偏向一个主体。",
     "",
     `**这篇的类型**：${input.essayType} —— ${input.typeDemand}`,
     "",
@@ -182,12 +188,22 @@ export function essayPlanPrompt(input: {
     `【Background】${input.background || "（还没写）"}`,
     `【Thesis Statement】${input.thesis || "（还没写）"}`,
     "",
-    "【三个大标题 · 各自对应的层次 · 打算怎么写】",
+    "【三个大标题】",
     ...input.headings.map(
       (h, i) =>
-        `${i + 1}. ${h.text || "（空）"}　[${h.levelName || "未选层次"}]\n   ${h.plan || "（还没想好）"}`,
+        `${i + 1}. ${h.text || "（空）"}` +
+        (input.levelMode === "perHeading" ? `　[${h.levelName || "未选层次"}]` : "") +
+        (h.plan.trim() ? `\n   ${h.plan}` : ""),
     ),
   ];
+
+  if (input.levelMode === "five") {
+    lines.push(
+      "",
+      "【五个层次我打算怎么带到】",
+      ...(input.levelNotes ?? []).map(([name, note]) => `- ${name}：${note.trim() || "（还没想好）"}`),
+    );
+  }
 
   if (input.previous) {
     lines.push(
@@ -208,7 +224,9 @@ export function essayPlanPrompt(input: {
     "请你：",
     "1. 逐条对照 Thesis 硬性要求批我的 thesis，语法错误全部指出来并改对；",
     "2. 三个标题的措辞逐个批 —— 有没有不通顺、不成立、或者互相重叠的；",
-    "3. 每个标题跟它选的层次配不配，三个层次的组合合不合理；",
+    input.levelMode === "five"
+      ? "3. 指出我哪个层次带得勉强或根本没带到；标题够不够广，撑不撑得起五个层次；"
+      : "3. 每个标题跟它选的层次配不配，三个层次的组合合不合理；",
     `4. ${input.essayType} 这个类型特有的坑，我这份计划踩了没有；`,
     "5. **最后单独给我一个数字：这份计划里一共多少处语法错误。** 我要记录下来跟上一版比。",
     "",
