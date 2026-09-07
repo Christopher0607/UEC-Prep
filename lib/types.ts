@@ -128,6 +128,41 @@ export interface EssayPlan {
   createdAt: string;
 }
 
+export type QuestionType = "mcq" | "short" | "long" | "other";
+
+export interface BankQuestion {
+  id: string;
+  /** 题号, e.g. "12" or "3(b)". */
+  number: string;
+  type: QuestionType;
+  marks?: number;
+  /**
+   * Chapter the question tests — matched against Topic.section so the coverage
+   * table can show how often each chapter has actually been examined.
+   */
+  chapter: string;
+  attempted: boolean;
+  correct?: boolean;
+  note?: string;
+}
+
+/**
+ * A past paper in the bank: the scans plus a per-question index. The index is
+ * what makes the bank useful — it turns "我有八年的卷子" into
+ * "第4章考过 11 次，第5章只考过 2 次".
+ */
+export interface PastPaper {
+  id: string;
+  subjectId: SubjectId;
+  year: string;
+  /** 试卷一 / 试卷二 / 单卷. */
+  paper: string;
+  /** IndexedDB keys of the page scans, in order. Never the images themselves. */
+  pageIds: string[];
+  questions: BankQuestion[];
+  createdAt: string;
+}
+
 export interface AppData {
   version: number;
   topics: Topic[];
@@ -135,6 +170,8 @@ export interface AppData {
   cards: Card[];
   papers: PaperAttempt[];
   essays: EssayPlan[];
+  /** 历年考题题库 — scans live in IndexedDB, only ids are stored here. */
+  bank: PastPaper[];
   /** Baseline from the mid-year report card, used until a real paper score exists. */
   baselines: Partial<Record<SubjectId, number>>;
   updatedAt: string;

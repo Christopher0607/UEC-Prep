@@ -19,6 +19,7 @@ function emptyData(): AppData {
     cards: [],
     papers: [],
     essays: [],
+    bank: [],
     baselines,
     updatedAt: new Date().toISOString(),
   };
@@ -61,6 +62,7 @@ function migrate(raw: unknown): AppData {
     cards: d.cards ?? [],
     papers: d.papers ?? [],
     essays: d.essays ?? [],
+    bank: d.bank ?? [],
     baselines: { ...base.baselines, ...(d.baselines ?? {}) },
   };
 }

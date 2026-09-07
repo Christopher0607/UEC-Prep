@@ -6,13 +6,17 @@
 const MAX_EDGE = 1280;
 const QUALITY = 0.7;
 
-export function compressImage(file: File): Promise<string> {
+/** Past-paper scans need to stay readable, so they get more pixels. */
+export const PAPER_EDGE = 2000;
+export const PAPER_QUALITY = 0.8;
+
+export function compressImage(file: File, maxEdge = MAX_EDGE, quality = QUALITY): Promise<string> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
+      const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(img.width * scale);
       canvas.height = Math.round(img.height * scale);
@@ -22,7 +26,7 @@ export function compressImage(file: File): Promise<string> {
         return;
       }
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL("image/jpeg", QUALITY));
+      resolve(canvas.toDataURL("image/jpeg", quality));
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/chinese/", label: "华文" },
   { href: "/flashcards/", label: "背诵" },
   { href: "/papers/", label: "真题" },
+  { href: "/bank/", label: "题库" },
   { href: "/data/", label: "备份" },
 ];
 
