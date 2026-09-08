@@ -258,3 +258,73 @@ export const ENGLISH_SYLLABUS_SEED: { section: string; title: string }[] = [
   { section: "语法（我的弱项）", title: "从句与连接词" },
   { section: "语法（我的弱项）", title: "词形变化（Word Form 规则）" },
 ];
+
+/**
+ * Word Forms 是全科规则最有限、最该拿满的一块，而预考只拿了 2/10。
+ * 失分的直接原因不是时间——这一部分是第三个做的，状态还好——而是没有
+ * 「先判词性」这一步：看到括号里的词就开始猜变形，结果第 49、50 题
+ * 连词性都不对。
+ */
+export const WORD_FORM_METHOD = [
+  {
+    step: "1. 遮住括号里的词",
+    detail: "先不要看词根。看了就会开始猜变形，跳过判断词性这一步。",
+  },
+  {
+    step: "2. 只看空格前后，判断这里要什么词性",
+    detail:
+      "前面是 a / an / the / 形容词 → 名词；修饰动词或整句 → 副词；在 be 动词后、名词前 → 形容词；主语后没有动词 → 动词。",
+  },
+  {
+    step: "3. 词性定了，才想那个词根变成这个词性长什么样",
+    detail: "顺带检查单复数、时态、以及要不要加前缀（un- / in- / re-）。",
+  },
+];
+
+/** 后缀速查。词性定了之后，从这里选形状。 */
+export const SUFFIX_TABLE: { pos: string; suffixes: string; examples: string }[] = [
+  {
+    pos: "名词 · 抽象概念",
+    suffixes: "-tion / -sion / -ment / -ness / -ity / -ance / -ence / -ism",
+    examples: "civilisation、achievement、happiness、ability、importance、symbol**ism**",
+  },
+  {
+    pos: "名词 · 人",
+    suffixes: "-er / -or / -ian / -ist / -ant",
+    examples: "teacher、director、histor**ian**、scientist、assistant",
+  },
+  {
+    pos: "名词 · 事件／实例",
+    suffixes: "-ence / -ance / -al",
+    examples: "occur → occurr**ence**、arrive → arrival、appear → appearance",
+  },
+  {
+    pos: "动词",
+    suffixes: "-ise / -ize / -ify / -en / -ate",
+    examples: "modernise、simplify、strengthen、activate",
+  },
+  {
+    pos: "形容词",
+    suffixes: "-able / -ible / -al / -ful / -less / -ous / -ive / -ic / -ent / -ant",
+    examples: "reliable、national、careful、endless、dangerous、effective",
+  },
+  { pos: "副词", suffixes: "-ly", examples: "silent → silent**ly**、know → know**ingly**" },
+  {
+    pos: "序数词",
+    suffixes: "-th / -st / -nd / -rd",
+    examples: "twenty → twent**ieth**（不是 twenties）、five → fifth",
+  },
+];
+
+/** 预考里真丢分的十个空，是最值得反复回看的一组。 */
+export const WORD_FORM_MISSES: { n: number; root: string; wrote: string; right: string; why: string }[] = [
+  { n: 42, root: "civilise", wrote: "civilisation", right: "civilisations", why: "「across ancient …」要复数" },
+  { n: 43, root: "history", wrote: "historicst", right: "historians", why: "指人，用 -ian" },
+  { n: 44, root: "light", wrote: "unlighten", right: "lit", why: "不规则动词的过去分词" },
+  { n: 45, root: "corporate", wrote: "corporations", right: "incorporating", why: "要加前缀 in- 再变分词" },
+  { n: 47, root: "symbol", wrote: "symbolisation", right: "symbolism", why: "指「象征意义」用 -ism，不是动作名词" },
+  { n: 48, root: "twenty", wrote: "twenties", right: "twentieth", why: "「the early ___ century」要序数词" },
+  { n: 49, root: "occur", wrote: "occured", right: "occurrence", why: "空格前是形容词 → 要名词；且双写 r" },
+  { n: 50, root: "know", wrote: "knowing", right: "knowingly", why: "修饰动词 carry → 要副词" },
+];
+

@@ -17,6 +17,9 @@ import {
   ESSAY_TYPES,
   GRAMMAR_TRAPS,
   PAPER2_SECTIONS,
+  SUFFIX_TABLE,
+  WORD_FORM_METHOD,
+  WORD_FORM_MISSES,
   checkFiveLevels,
   checkLevelSpread,
   checkThesis,
@@ -507,6 +510,50 @@ export default function EssayPage() {
               <p className="text-sm font-medium">{t.name}</p>
               <p className="mt-1 text-sm text-danger">✗ {t.wrong}</p>
               <p className="text-sm text-ok">✓ {t.right.replace(/\*\*/g, "")}</p>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel
+        title="Word Forms · 三步流程"
+        subtitle="预考这部分只拿 2/10，而它是全科规则最有限的一块。失分不是因为没时间 —— 这部分是第三个做的 —— 是因为跳过了第一步。"
+      >
+        <ol className="space-y-2">
+          {WORD_FORM_METHOD.map((m) => (
+            <li key={m.step} className="rounded-xl border p-3">
+              <p className="text-sm font-medium">{m.step}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{m.detail}</p>
+            </li>
+          ))}
+        </ol>
+
+        <h3 className="mt-5 mb-2 text-sm font-semibold">后缀速查</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody>
+              {SUFFIX_TABLE.map((r) => (
+                <tr key={r.pos} className="border-b last:border-b-0">
+                  <td className="py-2 pr-3 align-top font-medium whitespace-nowrap">{r.pos}</td>
+                  <td className="py-2 pr-3 align-top font-mono text-xs">{r.suffixes}</td>
+                  <td className="py-2 align-top text-muted-foreground">
+                    {r.examples.replace(/\*\*/g, "")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="mt-5 mb-2 text-sm font-semibold">预考丢掉的八个空</h3>
+        <ul className="space-y-1.5">
+          {WORD_FORM_MISSES.map((m) => (
+            <li key={m.n} className="flex flex-wrap items-baseline gap-x-2 rounded-lg border px-3 py-2 text-sm">
+              <span className="w-8 shrink-0 tnum text-muted-foreground">{m.n}</span>
+              <span className="w-20 shrink-0 font-mono text-xs">({m.root})</span>
+              <span className="text-danger line-through">{m.wrote}</span>
+              <span className="text-ok">{m.right}</span>
+              <span className="w-full text-xs text-muted-foreground sm:w-auto sm:flex-1">{m.why}</span>
             </li>
           ))}
         </ul>
