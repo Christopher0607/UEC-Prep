@@ -77,14 +77,15 @@ export function levelById(id: string): AnalysisLevel | undefined {
  * them pays twice.
  */
 export const GRAMMAR_TRAPS: { name: string; wrong: string; right: string }[] = [
-  { name: "单复数", wrong: "individual must be open-minded", right: "individual**s** must be open-minded" },
-  { name: "主谓一致", wrong: "we should always helps / who is in difficult situations", right: "we should always help / who **are** in difficult situations" },
-  { name: "冠词漏写", wrong: "have right to choose / think out of box", right: "have **the** right to choose / think outside **the** box" },
-  { name: "介词搭配", wrong: "make jokes of others / give a hand on our neighbour", right: "make jokes **about** others / lend a hand **to** our neighbours" },
-  { name: "近形词混用", wrong: "As a good residence（住宅）", right: "As good **residents**（居民）" },
-  { name: "不可数名词", wrong: "works from educations", right: "through **education**" },
+  { name: "单复数", wrong: "individual must be / Across ancient civilisation", right: "individual**s** / ancient civilisation**s**（预考 Q42 丢分）" },
+  { name: "主谓一致", wrong: "A large number of students has chosen", right: "…**have** chosen（预考 Q34 丢分）" },
+  { name: "可数 / 不可数", wrong: "fewer evidence / works from educations", right: "**less** evidence / through **education**（预考 Q33 丢分）" },
+  { name: "词性判断", wrong: "a everyday occured / we knowing carry on", right: "a everyday **occurrence**（名词）/ **knowingly**（副词）（预考 Q49、Q50 丢分）" },
+  { name: "名词后缀选错", wrong: "symbolisation / twenties century", right: "**symbolism** / **twentieth** century（预考 Q47、Q48 丢分）" },
+  { name: "冠词漏写", wrong: "have right to choose / think out of box", right: "have **the** right / think outside **the** box" },
+  { name: "介词搭配", wrong: "make jokes of others / influx on immigrants", right: "jokes **about** others / influx **of** immigrants（预考 Q39 丢分）" },
+  { name: "近形词混用", wrong: "residence（住宅）/ eminent（杰出的）", right: "resident**s**（居民）/ **imminent**（迫近的）（预考 Q35 丢分）" },
 ];
-
 /** Hook → Background → Thesis. The thesis is where the marks are won or lost. */
 export const INTRO_PARTS = [
   { id: "hook", name: "Hook", hint: "抓住阅卷老师，第一句就要有力" },
@@ -187,36 +188,53 @@ export function checkThesis(thesis: string, headings: string[]): ThesisCheck[] {
   ];
 }
 
-/** Paper 2 sections, as described by the teacher. */
+/**
+ * 全科分值，照 2026 预考卷面（坤成中学 SY03）。两张卷各占 50%。
+ * 作文一项就占 35% —— 是全科最大的一块，比 Paper 2 任何一部分大三倍。
+ */
+export const PAPER_WEIGHTS: { paper: string; part: string; weight: number; note: string }[] = [
+  { paper: "Paper 1", part: "Section A · Summary Writing", weight: 15, note: "150 字以内，考抓重点 + 换句话说" },
+  { paper: "Paper 1", part: "Section B · Essay Writing", weight: 35, note: "不少于 350 字，五选一。全科最大的一块" },
+  { paper: "Paper 2", part: "Section A Part I · Matching Paragraph", weight: 10, note: "四段文章配十题，内容相近容易错" },
+  { paper: "Paper 2", part: "Section A Part II · Vocabulary", weight: 10, note: "词义辨析，考的是词汇量" },
+  { paper: "Paper 2", part: "Section A Part III · Comprehension", weight: 10, note: "推论、语气、写作意图，比字面理解难" },
+  { paper: "Paper 2", part: "Section B Part I · Error Identification", weight: 10, note: "四处画线挑一处错。纯语法规则" },
+  { paper: "Paper 2", part: "Section B Part II · Word Forms", weight: 10, note: "给词根填正确词形。规则有限，最该拿满" },
+];
+
+/**
+ * Paper 2 的五个部分。注意：Section A Part II 是 Vocabulary（词义），
+ * 不是第二篇阅读理解 —— 整张卷只有一篇 comprehension。
+ */
 export const PAPER2_SECTIONS = [
   {
     id: "matching",
-    name: "Section 1 · Matching Paragraph",
-    detail: "4 篇文章，10 题。难在几篇内容很像，容易对错。",
+    name: "Part I · Matching Paragraph（10%）",
+    detail: "四段文章，十题定位。难在几段内容很像，容易对错。",
     difficulty: "难",
   },
   {
-    id: "comprehension-1",
-    name: "Section 2 · 阅读理解（易）",
-    detail: "题目直接，通常没什么难度。这里不能丢分。",
-    difficulty: "易",
+    id: "vocabulary",
+    name: "Part II · Vocabulary（10%）",
+    detail: "词义辨析：coined / palatability / onerous 这类。纯粹考词汇量，靠积累。",
+    difficulty: "中",
   },
   {
-    id: "comprehension-2",
-    name: "Section 3 · 阅读理解（难）",
-    detail: "文章更难，选项之间非常接近，难以辨认。",
+    id: "comprehension",
+    name: "Part III · Comprehension（10%）",
+    detail: "推论、作者态度、写作意图。选项之间非常接近，是阅读里最难的一块。",
     difficulty: "难",
   },
   {
     id: "identify-error",
-    name: "Section 4 · Identify Error",
-    detail: "找出句子里有语病的那个词。纯语法，可以靠刷题和归类拿满。",
+    name: "Section B Part I · Error Identification（10%）",
+    detail: "四处画线挑一处错。考的是有限的几条语法规则，可以刷到很高。",
     difficulty: "中",
   },
   {
     id: "word-form",
-    name: "Section 5 · Word Form",
-    detail: "给定单词和句子，变形后拼成完整句子。规则有限，是性价比最高的一块。",
+    name: "Section B Part II · Word Forms（10%）",
+    detail: "给词根填正确词形。规则最有限、最该拿满的一部分。",
     difficulty: "中",
   },
 ];
