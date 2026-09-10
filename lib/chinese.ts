@@ -217,6 +217,273 @@ export const PAPER2_PARTS: { name: string; detail: string; method: string }[] = 
   },
 ];
 
+/**
+ * 应用文的逐项给分表，照 2025 年高三上学年统考的《评阅标准参考》原文录入。
+ *
+ * 这份东西改变了应用文该怎么练：内容 5% 不是整体印象分，是九到十个格子，
+ * 每格 0.5%–2%。写满格子就拿满分，漏一格就少 0.5%。所以练的方式不是
+ * 「多写几篇」，是「背下格子清单，考场上逐格打勾」。
+ */
+export interface MarkSlot {
+  slot: string;
+  marks: string;
+  sample: string;
+}
+
+export interface ApplicationRubric {
+  genre: string;
+  question: string;
+  breakdown: string;
+  slots: MarkSlot[];
+  notes: string[];
+}
+
+export const APPLICATION_RUBRICS: ApplicationRubric[] = [
+  {
+    genre: "道歉启事",
+    question:
+      "《大事记日报》因误植照片而影响他人声誉。试以该报社总编辑林见贤名义，拟一则道歉启事。",
+    breakdown: "内容 5%　格式 2%　语言 2%　技术 1%",
+    slots: [
+      { slot: "发信单位", marks: "—", sample: "《大事记日报》报社" },
+      { slot: "标题", marks: "—", sample: "道歉启事" },
+      {
+        slot: "事件描述（道歉原因）",
+        marks: "1%",
+        sample:
+          "本报于 6 月 10 日报道（0.5%）吉隆坡市陈姓医生遭控医疗失误案新闻（0.5%），由于一时疏忽而刊登了永康诊所及该诊所医生的照片，有损该诊所声誉（0.5%），特此道歉。",
+      },
+      { slot: "报道日期", marks: "0.5%", sample: "6 月 10 日" },
+      { slot: "发启事目的", marks: "0.5%", sample: "特此向受害者道歉" },
+      {
+        slot: "详情 ×3（每个 0.5%）",
+        marks: "1.5%",
+        sample:
+          "从这五个里挑三个写：澄清事件／名字与身份（务必写全名）／采取措施（下架照片、作出赔偿、犯错者被革职）／造成影响／表达歉疚",
+      },
+      { slot: "联络人", marks: "0.5%", sample: "若有任何疑问，请致电本人林见贤，联络电话 03-12345678" },
+      { slot: "保证", marks: "0.5%", sample: "本报承诺日后处理新闻将更加谨慎，保证不再犯上同样错误" },
+      { slot: "致歉", marks: "0.5%", sample: "谨此致歉" },
+    ],
+    notes: [
+      "名字务必写全名 —— 评分参考特别标了这一句。",
+      "详情只需三个，写第四第五个不加分；但少写一个就是 −0.5%。",
+    ],
+  },
+  {
+    genre: "通告",
+    question:
+      "仁爱中学校史馆即将开放参观，校方制定规则供学生遵守。试以该馆主任林见贤名义，拟一则校史馆参观规则通告。",
+    breakdown: "内容 5%　格式 2%　语言 2%　技术 1%",
+    slots: [
+      { slot: "发通告单位", marks: "—", sample: "仁爱中学校史馆" },
+      { slot: "对象", marks: "—", sample: "致：全体学生" },
+      { slot: "标题", marks: "—", sample: "校史馆参观规则通告" },
+      {
+        slot: "宗旨 ×2",
+        marks: "1%",
+        sample: "为加强校史馆管理、保障馆内文物安全，维持校史馆的秩序与安宁，特定以下规则",
+      },
+      { slot: "日期／时间／地点", marks: "0.5%", sample: "即日起生效" },
+      { slot: "写通告目的", marks: "0.5%", sample: "特此敬请全体学生垂注" },
+      {
+        slot: "详情 ×4（每个 0.5%）",
+        marks: "2%",
+        sample:
+          "从这六个里挑四个：①开放时段／闭馆时间　②凭学生证入馆，限本人使用，不得转借　③珍贵文物仅限阅览室参阅，概不外借　④禁带食物饮料／书包入馆　⑤不遵守者可拒绝入馆，查证属实按情节扣分记过（必写）　⑥联系人",
+      },
+      { slot: "呼吁", marks: "0.5%", sample: "请同学们共同遵守规则" },
+      { slot: "致谢", marks: "0.5%", sample: "先此致谢。" },
+    ],
+    notes: [
+      "第 ⑤ 条「违规后果」评分参考标了「必写」—— 四个详情里这一个是固定的，只需再挑三个。",
+      "内容详情若写成要点式（分行列点）扣 0.5% 语言分 —— 必须写成句子。",
+    ],
+  },
+];
+
+/** 格式与技术分是机器一样的扣法，考场上照着自查就能捡回来。 */
+export const MECHANICAL_RULES: { area: string; rule: string }[] = [
+  { area: "应用文格式 2%", rule: "按董总应用文要求。空错格、空错行、序号错 —— 每一项都扣分。" },
+  { area: "应用文语言 2%", rule: "内容详情写成要点式（分行列点）扣 0.5%。必须是完整句子。" },
+  { area: "作文技术 2%", rule: "每 2 个错别字 = 1 个错误点。" },
+  { area: "作文技术 2%", rule: "每 4 个标点错误 = 1 个错误点。" },
+  { area: "作文技术 2%", rule: "没写题号／题目 = 1 个错误点。" },
+  { area: "作文技术 2%", rule: "半命题或材料作文没按要求拟题 = 1 个错误点。" },
+];
+
+/**
+ * 作文评分的天花板规则 —— 这一条比任何写作技巧都重要：
+ * 内容评 E 等，语言和结构最高只能评 C 等。跑题的作文，文笔再好也封顶。
+ */
+export const ESSAY_CEILING =
+  "附则：内容评 E 等 → 语言、结构最高只能评 C 等；内容评 1.5% → 直接归入 E 等。校内评分内容总分最高 24%。换句话说：切题是天花板，不是及格线。审题多花三分钟，比多写两百字值钱得多。";
+
+/** 2025 预试的五道作文题与官方的切题／偏题／离题界线。审题练习用真题最准。 */
+export const ESSAY_PROMPTS: {
+  title: string;
+  genre: string;
+  key: string;
+  onTopic: string;
+  drift: string;
+  off: string;
+}[] = [
+  {
+    title: "十字路口",
+    genre: "抒情／记叙／夹叙夹议",
+    key: "心理描写，人生抉择",
+    onTopic:
+      "把「十字路口」当意象，串起几个人生阶段的抉择片段（文理分科、专业选择、是否转学），重点写抉择时的心理斗争与最终决定。",
+    drift: "提到了十字路口，但大篇幅写实际交通场景，缺乏引申意义，或主题模糊。",
+    off: "完全脱离象征意义 —— 写巴刹口、商店门口这类其他地点。",
+  },
+  {
+    title: "这次换我来守护",
+    genre: "叙事抒情",
+    key: "情感转变，具体行动",
+    onTopic:
+      "突出「从被守护到主动守护」的心理变化，并用动作、语言、神态的细节写出守护的实际行为。",
+    drift: "写了守护，但没体现「换我」的转变与主动性，或内容松散。",
+    off: "写成自己被守护、或只写自我成长而没有守护他人。",
+  },
+  {
+    title: "＿＿也是一种智慧（宽容／等待／低头）",
+    genre: "议论／夹叙夹议",
+    key: "概念重新定义 · 哲理思考",
+    onTopic:
+      "把所选的词重新定义：宽容不是懦弱而是力量；等待不是消极而是蓄势；低头不是认输而是以退为进。必须论证它「为什么是智慧」。",
+    drift: "选了词，但论证薄弱，只写行为本身而不阐释其智慧性。",
+    off: "没选给定的三个词，或完全没体现「智慧」。",
+  },
+  {
+    title: "科技越强，人类真的越弱吗？",
+    genre: "议论",
+    key: "辩证分析，论据充分",
+    onTopic:
+      "不要简单选「认同／不认同」—— 评分参考明写这种二元对立不佳。要提出自己更精细的观点：科技重新定义了「强」／关键在使用者而非科技／人文精神才是不可替代的强。",
+    drift: "观点模糊，只罗列现象没有分析，没深入探讨「强弱」的辩证关系。",
+    off: "完全没回应题目问题，或脱离「科技与人类」的关系。",
+  },
+  {
+    title: "材料作文（马拉松选手林默的承诺）",
+    genre: "议论／夹叙夹议",
+    key: "精准概括 · 引述材料 · 联系实际",
+    onTopic:
+      "四个可选角度：承诺责任（一诺千金）／信念力量（精神超越肉体极限）／亲情之爱（爱是最强驱动力）／生命意义（为他人而战）。自拟题目要扣住所选角度。",
+    drift: "与材料有关但主题不突出，过度发挥或忽略关键情节。",
+    off: "完全脱离材料，自拟题目与材料无关，或没有引用材料。",
+  },
+];
+
+/**
+ * 2026 预试的课内文言文范围 —— 老师原件的红／灰标注：红为重要、灰为次要。
+ * 【年份】= 该篇在统考已经考过的年份。老师给的备考顺序是「统考未考过的先」。
+ */
+export const WENYAN_SCOPE: {
+  book: string;
+  pieces: { name: string; author: string; weight: "重要" | "次要"; examined?: string }[];
+}[] = [
+  {
+    book: "高一上册",
+    pieces: [
+      { name: "先妣事略", author: "归有光", weight: "重要" },
+      { name: "五柳先生传", author: "陶渊明", weight: "重要" },
+    ],
+  },
+  {
+    book: "高二上册",
+    pieces: [
+      { name: "孔子论「仁」", author: "《论语》", weight: "次要" },
+      { name: "鱼我所欲也", author: "《孟子》", weight: "重要" },
+      { name: "与妻诀别书", author: "林觉民", weight: "重要" },
+      { name: "答司马谏议书", author: "王安石", weight: "重要" },
+    ],
+  },
+  {
+    book: "高二下册",
+    pieces: [
+      { name: "庖丁解牛", author: "庄子", weight: "重要" },
+      { name: "公输", author: "墨子", weight: "重要" },
+      { name: "察今", author: "《吕氏春秋》", weight: "重要", examined: "2014" },
+      { name: "干将莫邪", author: "干宝", weight: "重要" },
+      { name: "《世说新语》选", author: "刘义庆", weight: "重要" },
+      { name: "口技", author: "蒲松龄", weight: "重要" },
+    ],
+  },
+  {
+    book: "高三上册",
+    pieces: [
+      { name: "前赤壁赋", author: "苏轼", weight: "次要" },
+      { name: "与陈伯之书", author: "丘迟", weight: "重要" },
+    ],
+  },
+  {
+    book: "高三下册",
+    pieces: [
+      { name: "过秦论", author: "贾谊", weight: "重要", examined: "2012" },
+      { name: "师说", author: "韩愈", weight: "重要", examined: "2013" },
+    ],
+  },
+];
+
+/**
+ * 诗词背诵范围。标了年份的是统考已考过的 —— 老师的备考顺序是未考过的优先，
+ * 所以没有年份的那几首反而该先背。
+ */
+export const POETRY_SCOPE: {
+  book: string;
+  poems: { name: string; examined?: string }[];
+}[] = [
+  {
+    book: "高一上册",
+    poems: [
+      { name: "夜雨寄北" },
+      { name: "从军行" },
+      { name: "示儿" },
+      { name: "草" },
+      { name: "山居秋暝" },
+      { name: "登高", examined: "2025、2017" },
+      { name: "黄鹤楼", examined: "2024" },
+      { name: "和子由渑池怀旧" },
+    ],
+  },
+  {
+    book: "高一下册",
+    poems: [
+      { name: "陌上桑 第 1 段", examined: "2023" },
+      { name: "行行重行行", examined: "2022" },
+    ],
+  },
+  {
+    book: "高二上册",
+    poems: [
+      { name: "归园田居", examined: "2020" },
+      { name: "饮酒", examined: "2012" },
+      { name: "短歌行（山不厌高，海不厌深。周公吐哺，天下归心）", examined: "2021" },
+    ],
+  },
+  {
+    book: "高二下册",
+    poems: [{ name: "关雎", examined: "2015" }, { name: "硕鼠" }],
+  },
+  {
+    book: "高三上册",
+    poems: [
+      { name: "琵琶行 第 2 段", examined: "2014" },
+      { name: "将进酒", examined: "2019" },
+      { name: "正气歌 第 1、2 段", examined: "2013、2018" },
+    ],
+  },
+  {
+    book: "高三下册",
+    poems: [
+      { name: "相见欢" },
+      { name: "声声慢" },
+      { name: "念奴娇", examined: "2016" },
+    ],
+  },
+];
+
 /** 华文 coverage-table seed, so the syllabus page starts with something real. */
 export const CHINESE_SYLLABUS_SEED: { section: string; title: string }[] = [
   { section: "试卷一 · 作文", title: "审题与立意" },

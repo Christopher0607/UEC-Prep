@@ -10,10 +10,16 @@ import {
   Textarea,
 } from "@/components/ui";
 import {
+  APPLICATION_RUBRICS,
+  ESSAY_CEILING,
+  ESSAY_PROMPTS,
   FORMAT_TRAPS,
   GENRES,
+  MECHANICAL_RULES,
   PAPER2_PARTS,
   PHRASE_BANK,
+  POETRY_SCOPE,
+  WENYAN_SCOPE,
   genreById,
 } from "@/lib/chinese";
 import type { GenreId } from "@/lib/chinese";
@@ -210,6 +216,147 @@ export default function ChinesePage() {
             }
             label="让 Claude 批这份提纲"
           />
+        </div>
+      </Panel>
+
+      <Panel
+        title="应用文 · 逐格给分表"
+        subtitle="照 2025 年统考《评阅标准参考》原文录入。内容 5% 不是印象分，是九到十个格子，每格 0.5%–2% —— 写满就满分，漏一格就 −0.5%。"
+      >
+        <div className="space-y-4">
+          {APPLICATION_RUBRICS.map((r) => (
+            <div key={r.genre} className="rounded-xl border p-3">
+              <div className="mb-1 flex flex-wrap items-baseline gap-x-3">
+                <h3 className="font-semibold">{r.genre}</h3>
+                <span className="text-xs text-muted-foreground">{r.breakdown}</span>
+              </div>
+              <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{r.question}</p>
+              <ul className="space-y-1.5">
+                {r.slots.map((sl) => (
+                  <li key={sl.slot} className="rounded-lg border px-2.5 py-2 text-sm">
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-medium">{sl.slot}</span>
+                      <span className="tnum text-xs font-semibold text-accent">{sl.marks}</span>
+                    </div>
+                    <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                      {sl.sample}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <ul className="mt-2 space-y-1">
+                {r.notes.map((n) => (
+                  <li key={n} className="text-sm text-warn">
+                    ⚠️ {n}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel
+        title="格式与技术：机器一样的扣法"
+        subtitle="这些分不靠写作能力，靠考场上花两分钟自查。丢掉最可惜。"
+      >
+        <ul className="space-y-1.5">
+          {MECHANICAL_RULES.map((m, i) => (
+            <li key={i} className="flex flex-wrap items-baseline gap-x-3 rounded-lg border px-3 py-2 text-sm">
+              <span className="shrink-0 text-xs font-medium text-muted-foreground">{m.area}</span>
+              <span className="min-w-0 flex-1">{m.rule}</span>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel title="作文 · 审题才是天花板" subtitle="2025 预试五道真题的官方切题界线。">
+        <p className="mb-3 rounded-xl border border-warn/40 bg-warn/5 p-3 text-sm leading-relaxed">
+          {ESSAY_CEILING}
+        </p>
+        <div className="space-y-3">
+          {ESSAY_PROMPTS.map((e) => (
+            <div key={e.title} className="rounded-xl border p-3">
+              <div className="flex flex-wrap items-baseline gap-x-3">
+                <h3 className="font-semibold">{e.title}</h3>
+                <span className="text-xs text-muted-foreground">{e.genre}</span>
+                <span className="text-xs text-accent">{e.key}</span>
+              </div>
+              <dl className="mt-2 space-y-1.5 text-sm leading-relaxed">
+                <div>
+                  <dt className="inline font-medium text-ok">切题　</dt>
+                  <dd className="inline text-muted-foreground">{e.onTopic}</dd>
+                </div>
+                <div>
+                  <dt className="inline font-medium text-warn">不甚切题　</dt>
+                  <dd className="inline text-muted-foreground">{e.drift}</dd>
+                </div>
+                <div>
+                  <dt className="inline font-medium text-danger">离题　</dt>
+                  <dd className="inline text-muted-foreground">{e.off}</dd>
+                </div>
+              </dl>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel
+        title="课内文言文 · 2026 预试范围"
+        subtitle="老师原件的红／灰标注。标了年份的是统考已经考过的 —— 老师给的备考顺序是「统考未考过的先」。"
+      >
+        <div className="space-y-3">
+          {WENYAN_SCOPE.map((b) => (
+            <div key={b.book}>
+              <h3 className="mb-1.5 text-sm font-semibold text-muted-foreground">{b.book}</h3>
+              <ul className="flex flex-wrap gap-2">
+                {b.pieces.map((pc) => (
+                  <li
+                    key={pc.name}
+                    className={`rounded-lg border px-2.5 py-1.5 text-sm ${
+                      pc.weight === "重要" ? "border-accent" : "opacity-70"
+                    }`}
+                  >
+                    {pc.name}
+                    <span className="ml-1.5 text-xs text-muted-foreground">{pc.author}</span>
+                    {pc.examined && (
+                      <span className="ml-1.5 text-xs text-muted-foreground">已考 {pc.examined}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel
+        title="诗词背诵范围"
+        subtitle="标了年份的统考考过了，没标的一次都没考过 —— 按老师的备考顺序，没标的优先。"
+      >
+        <div className="space-y-3">
+          {POETRY_SCOPE.map((b) => (
+            <div key={b.book}>
+              <h3 className="mb-1.5 text-sm font-semibold text-muted-foreground">{b.book}</h3>
+              <ul className="flex flex-wrap gap-2">
+                {b.poems.map((pm) => (
+                  <li
+                    key={pm.name}
+                    className={`rounded-lg border px-2.5 py-1.5 text-sm ${
+                      pm.examined ? "opacity-70" : "border-accent"
+                    }`}
+                  >
+                    {pm.name}
+                    {pm.examined ? (
+                      <span className="ml-1.5 text-xs text-muted-foreground">已考 {pm.examined}</span>
+                    ) : (
+                      <span className="ml-1.5 text-xs text-accent">未考过</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </Panel>
 
