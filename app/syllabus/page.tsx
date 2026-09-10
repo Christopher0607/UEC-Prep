@@ -16,7 +16,11 @@ import { CHINESE_SYLLABUS_SEED } from "@/lib/chinese";
 import { ENGLISH_SYLLABUS_SEED } from "@/lib/english";
 import { SUBJECTS, subjectById } from "@/lib/exam";
 import { newId, update, useData } from "@/lib/store";
-import { ACCOUNTING_SYLLABUS_SEED, ECONOMICS_SYLLABUS_SEED } from "@/lib/syllabi";
+import {
+  ACCOUNTING_SYLLABUS_SEED,
+  BUSINESS_SYLLABUS_SEED,
+  ECONOMICS_SYLLABUS_SEED,
+} from "@/lib/syllabi";
 import { buildTree, countTopics, isChapterSkipped } from "@/lib/topics";
 import type { Chapter } from "@/lib/topics";
 import type { Mastery, SubjectId, Topic } from "@/lib/types";
@@ -27,6 +31,7 @@ const SEEDS: { subject: SubjectId; label: string; data: { section: string; title
   { subject: "chinese", label: "华文考纲", data: CHINESE_SYLLABUS_SEED },
   { subject: "accounting", label: "会计目录", data: ACCOUNTING_SYLLABUS_SEED },
   { subject: "economics", label: "经济目录", data: ECONOMICS_SYLLABUS_SEED },
+  { subject: "business", label: "商业考点", data: BUSINESS_SYLLABUS_SEED },
 ];
 
 /**
