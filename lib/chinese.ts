@@ -484,6 +484,23 @@ export const POETRY_SCOPE: {
   },
 ];
 
+/**
+ * 试卷一的分组与分值，照 2026 预考卷头原文。此前只记了「作文 30%／应用文 10%」，
+ * 漏了最关键的一条：两组都是**选做**，不是全答 —— 选题本身就是分。
+ */
+export const PAPER1_STRUCTURE = {
+  total: "试卷一 写作 40%（1 小时 45 分钟）",
+  groups: [
+    { name: "甲组 · 作文", marks: "30%", detail: "5 题任选 1。白话文，至少 600 字，不可用诗歌或戏剧体裁。" },
+    { name: "乙组 · 应用文", marks: "10%", detail: "2 题任选 1。按新式应用文格式，写在专用作答纸上。" },
+  ],
+  warnings: [
+    "不得使用本身真实姓名或校名 —— 写信人一律用题目给的名字（2026 预考是「李志强」）。",
+    "题目印出来的地址就是送分：公函版头必须照抄写信人与收信人地址，不抄直接丢格式分。",
+    "标点符号须清楚且正确地标示在空格内。",
+  ],
+};
+
 /** 华文 coverage-table seed, so the syllabus page starts with something real. */
 export const CHINESE_SYLLABUS_SEED: { section: string; title: string }[] = [
   { section: "试卷一 · 作文", title: "审题与立意" },
