@@ -11,6 +11,10 @@ import {
 } from "@/components/ui";
 import {
   APPLICATION_RUBRICS,
+  READING_FORMULAS,
+  SENTENCE_ERRORS,
+  TRANSLATION_POINTS,
+  WENYAN_PREP,
   ESSAY_CEILING,
   ESSAY_PROMPTS,
   FORMAT_TRAPS,
@@ -358,6 +362,63 @@ export default function ChinesePage() {
             </div>
           ))}
         </div>
+      </Panel>
+
+      <Panel
+        title="现代文阅读 · 八种题型的答题公式"
+        subtitle="试卷二最大的一块（24%）。这不是「读懂了就会答」，是「知道这一类要写哪几段」—— 和应用文的逐格给分同一个道理。"
+      >
+        <div className="space-y-3">
+          {READING_FORMULAS.map((f) => (
+            <div key={f.type} className="rounded-xl border p-3">
+              <h3 className="font-semibold">{f.type}</h3>
+              <p className="mt-0.5 text-sm text-muted-foreground">{f.cue}</p>
+              <ol className="mt-2 space-y-1 text-sm leading-relaxed">
+                {f.formula.map((x, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="shrink-0 text-accent">{i + 1}.</span>
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-2 text-sm text-warn">⚠️ {f.trap}</p>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="课内文言文 · 每篇准备四样" subtitle="范围固定，是整份卷子最该拿满的一块。">
+        <ul className="space-y-1.5">
+          {WENYAN_PREP.map((w) => (
+            <li key={w.item} className="rounded-lg border px-3 py-2 text-sm">
+              <span className="font-medium">{w.item}</span>
+              <p className="mt-0.5 text-sm text-muted-foreground">{w.note}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm font-medium">翻译题的四个采分点（每句 2 分，踩中两项就够）</p>
+        <ul className="mt-1.5 flex flex-wrap gap-2 text-sm">
+          {TRANSLATION_POINTS.map((t) => (
+            <li key={t} className="rounded-lg border px-2.5 py-1">
+              {t}
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel title="语病六型" subtitle="修改病句题每年必考。认出类型就改得出来，不必靠语感。">
+        <ul className="space-y-1.5">
+          {SENTENCE_ERRORS.map((e) => (
+            <li
+              key={e.type}
+              className="flex flex-wrap items-baseline gap-x-3 rounded-lg border px-3 py-2 text-sm"
+            >
+              <span className="w-24 shrink-0 font-medium">{e.type}</span>
+              <span className="min-w-0 flex-1 text-muted-foreground">{e.sign}</span>
+              <span className="text-accent">→ {e.fix}</span>
+            </li>
+          ))}
+        </ul>
       </Panel>
 
       <Panel title="试卷二 · 六个部分" subtitle="六种不相干的能力。文言文翻译和文化常识没有任何共同的复习方法。">
