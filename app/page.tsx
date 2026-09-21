@@ -24,6 +24,7 @@ import { weeklyReviewPrompt } from "@/lib/prompt";
 import { dueCards } from "@/lib/srs";
 import { countTopics } from "@/lib/topics";
 import { useData } from "@/lib/store";
+import SeedPanel from "@/components/SeedPanel";
 import type { AppData, SubjectId } from "@/lib/types";
 
 /** Latest timed paper if there is one; otherwise the (inflated) report-card average. */
@@ -65,6 +66,8 @@ export default function Dashboard() {
           <span className="tnum">距放榜 {daysUntil(RESULTS_DAY, now)} 天</span>
         </div>
       </Panel>
+
+      <SeedPanel />
 
       <Panel title="⚠️ 头 48 小时考掉四科">
         <p className="text-sm leading-relaxed text-muted-foreground">

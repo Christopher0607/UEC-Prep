@@ -29,6 +29,36 @@ await page.waitForTimeout(1200);
 console.log("countdown:", (await page.locator(".tnum").first().innerText()).replace(/\n/g, " "));
 console.log("48h warning:", await page.getByText("头 48 小时考掉四科").isVisible());
 
+// One-click seeding — the whole point is that a fresh browser is usable at once.
+console.log("seed panel on empty:", await page.getByText("先把内容装进来").isVisible());
+await page.getByRole("button", { name: "一键载入全部" }).click();
+await page.waitForTimeout(800);
+const seedLine = await panel("装好了").getByText(/^已载入：/).innerText();
+console.log("seeded:", seedLine);
+await page.reload({ waitUntil: "networkidle" });
+await page.waitForTimeout(800);
+// After seeding the loud panel collapses into a one-liner.
+console.log("seed panel collapsed after reload:", !(await page.getByText("先把内容装进来").isVisible()));
+console.log("seeding is idempotent:", await page.getByRole("button", { name: "补载入缺的" }).isVisible());
+
+// Seeded data must actually reach the pages.
+await go("/syllabus/");
+await page.waitForTimeout(400);
+await panel("考点覆盖表").locator("select").selectOption("math");
+await page.waitForTimeout(300);
+console.log("seeded 数学 topics:", await panel("数学 · 考点").getByText(/熟练 0 \/ 35/).isVisible());
+await go("/flashcards/");
+await page.waitForTimeout(400);
+console.log("seeded cards due:", (await page.locator(".tnum").first().innerText()).trim());
+await go("/mistakes/");
+await page.waitForTimeout(400);
+console.log("seeded mistakes visible:", await page.getByText("2026 预考 高数 P1 Q1").first().isVisible());
+
+// Back to a clean slate so the rest of the run exercises the manual paths.
+await page.evaluate(() => localStorage.clear());
+await go("/");
+await page.waitForTimeout(600);
+
 // Syllabus — import into 高级数学, not the default subject
 await go("/syllabus/");
 await panel("考点覆盖表").locator("select").selectOption("advmath");
@@ -36,7 +66,12 @@ await page.waitForTimeout(200);
 await page.locator("textarea").fill("微积分 | 链式法则\n微积分 | 隐函数微分\n三角函数 | 和差化积");
 await page.getByRole("button", { name: /导入到/ }).click();
 await page.waitForTimeout(300);
+// The tree collapses by default; "只看盲区" force-opens every group.
+await page.getByRole("button", { name: "只看盲区" }).click();
+await page.waitForTimeout(300);
 await page.locator("li", { hasText: "链式法则" }).getByRole("button", { name: "熟练，能默写" }).click();
+await page.waitForTimeout(200);
+await page.getByRole("button", { name: "显示全部" }).click();
 await page.waitForTimeout(200);
 await page.reload({ waitUntil: "networkidle" });
 await page.waitForTimeout(500);

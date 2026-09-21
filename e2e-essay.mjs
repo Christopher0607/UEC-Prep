@@ -19,10 +19,9 @@ await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
 
 // English syllabus seed lands in the coverage table
 await page.goto(`${BASE}/syllabus/`, { waitUntil: "networkidle" });
-await page.getByRole("button", { name: "载入英文考纲（老师版）" }).click();
-await page.waitForTimeout(300);
-await page.getByRole("button", { name: /导入到英文/ }).click();
-await page.waitForTimeout(400);
+// Seeding now writes straight into the store — no textarea round-trip.
+await page.getByRole("button", { name: /^载入英文（/ }).click();
+await page.waitForTimeout(500);
 console.log("seeded english:", (await panel("英文 · 考点").innerText()).replace(/\n+/g, " | "));
 
 // Thesis rules: a split sentence and a missing heading must both be caught
@@ -50,10 +49,11 @@ console.log(
 );
 
 await panel("开头三件套").locator("textarea").nth(0).fill("Cities are growing faster than ever.");
-const levelInputs = panel("5 Levels of Analysis").locator("input");
-await levelInputs.nth(0).fill("individual stress and job prospects");
-await levelInputs.nth(3).fill("national GDP and policy");
-await panel("5 Levels of Analysis").getByRole("button", { name: /批这份计划/ }).click();
+// The five level notes are textareas, and the copy button lives in 批改与保存.
+const levelNotes = panel("5 Levels of Analysis").locator("textarea");
+await levelNotes.nth(0).fill("individual stress and job prospects");
+await levelNotes.nth(3).fill("national GDP and policy");
+await panel("批改与保存").getByRole("button", { name: /批这份计划/ }).click();
 await page.waitForTimeout(400);
 console.log("--- ESSAY PLAN PROMPT ---");
 console.log(await page.evaluate(() => navigator.clipboard.readText()));

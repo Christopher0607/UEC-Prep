@@ -494,6 +494,98 @@ export const BUSINESS_SYLLABUS_SEED = [
   ...flatten("第三册", BIZ_BOOK3),
 ];
 
+/**
+ * 数学与高级数学的考点表。
+ *
+ * 这两科没有拿到课本目录，所以考点是**从 2026 预考两张卷子逐题反推**的 ——
+ * 涵盖实际考过的每一个考点，外加同一章里必然相邻的几个。
+ * 拿到课本目录后应该照目录重录一次，但在那之前，这份表比空白有用得多。
+ */
+const MATH_TOPICS: { section: string; title: string }[] = [
+  { section: "数学 · 代数", title: "二次方程：根与系数的关系（和 −b/a、积 c/a）" },
+  { section: "数学 · 代数", title: "代数分式的化简与四则" },
+  { section: "数学 · 代数", title: "指数与根式：分数指数换算" },
+  { section: "数学 · 代数", title: "函数与复合函数 fg(x)" },
+  { section: "数学 · 代数", title: "解三元一次方程组" },
+  { section: "数学 · 代数", title: "不等式与线性规划：阴影区域的不等式组" },
+  { section: "数学 · 代数", title: "对数：换底公式与化简" },
+  { section: "数学 · 数列与矩阵", title: "等差数列：通项与指定项" },
+  { section: "数学 · 数列与矩阵", title: "矩阵：行向量乘矩阵" },
+  { section: "数学 · 数列与矩阵", title: "2×2 矩阵求逆与解方程组 AX=B" },
+  { section: "数学 · 三角与几何", title: "三角比与象限判断" },
+  { section: "数学 · 三角与几何", title: "三角恒等式化简（含 tanθ 已知求值）" },
+  { section: "数学 · 三角与几何", title: "扇形：弧长与面积" },
+  { section: "数学 · 三角与几何", title: "立体几何：直线与底面的夹角" },
+  { section: "数学 · 三角与几何", title: "解三角形：正弦定理与余弦定理" },
+  { section: "数学 · 三角与几何", title: "仰角与俯角的应用" },
+  { section: "数学 · 坐标几何", title: "两点距离与中点" },
+  { section: "数学 · 坐标几何", title: "内分点与外分点坐标" },
+  { section: "数学 · 坐标几何", title: "直线方程、平行与垂直" },
+  { section: "数学 · 坐标几何", title: "三角形面积（行列式法）" },
+  { section: "数学 · 坐标几何", title: "动点轨迹方程（阿波罗尼斯圆：两平方项系数必相等）" },
+  { section: "数学 · 统计与概率", title: "原始数据：平均数、中位数、众数" },
+  { section: "数学 · 统计与概率", title: "四分位差" },
+  { section: "数学 · 统计与概率", title: "分组数据：组中点必须等距" },
+  { section: "数学 · 统计与概率", title: "分组数据：平均数与标准差" },
+  { section: "数学 · 统计与概率", title: "分组数据：中位数 L+[(n/2−F)/f]×c" },
+  { section: "数学 · 统计与概率", title: "价格指数与综合指数" },
+  { section: "数学 · 统计与概率", title: "单步概率与独立事件" },
+  { section: "数学 · 统计与概率", title: "两次抽取：恰好一个／至少一个" },
+  { section: "数学 · 微积分", title: "微分：乘积法则与链式法则" },
+  { section: "数学 · 微积分", title: "切线斜率与法线斜率（取负倒数）" },
+  { section: "数学 · 微积分", title: "驻点与极值判断" },
+  { section: "数学 · 微积分", title: "积分：先化简再逐项积分" },
+  { section: "数学 · 微积分", title: "定积分：上下限与区间相加性" },
+  { section: "数学 · 微积分", title: "「Show that … Hence …」必须回头用结果" },
+];
+
+const ADVMATH_TOPICS: { section: string; title: string }[] = [
+  { section: "高数 · 代数与函数", title: "函数的定义域与值域（条件要用进答案）" },
+  { section: "高数 · 代数与函数", title: "反函数与复合函数" },
+  { section: "高数 · 代数与函数", title: "指数化简：根号套根号先换分数指数" },
+  { section: "高数 · 代数与函数", title: "对数方程（多层 log 由外向内剥）" },
+  { section: "高数 · 代数与函数", title: "二次方程：根与系数、(α−β)²＝(α+β)²−4αβ" },
+  { section: "高数 · 代数与函数", title: "含根号的方程（须验根）" },
+  { section: "高数 · 代数与函数", title: "有理不等式与数轴标根「奇穿偶不穿」" },
+  { section: "高数 · 代数与函数", title: "多项式：余数定理与因式定理、多项式除法" },
+  { section: "高数 · 代数与函数", title: "部分分式分解" },
+  { section: "高数 · 数列与级数", title: "等差与等比数列" },
+  { section: "高数 · 数列与级数", title: "Σ 求和公式：Σk、Σk²、Σk³" },
+  { section: "高数 · 数列与级数", title: "指定区间求和（k=3→50 要先减前两项）" },
+  { section: "高数 · 数列与级数", title: "二项式定理与指定项系数" },
+  { section: "高数 · 数列与级数", title: "年金与偿债基金（sinking fund）" },
+  { section: "高数 · 矩阵与行列式", title: "2×2、3×3 矩阵求逆" },
+  { section: "高数 · 矩阵与行列式", title: "行列式的性质（行的线性组合与换行变号）" },
+  { section: "高数 · 矩阵与行列式", title: "用矩阵解三元方程组" },
+  { section: "高数 · 三角", title: "三角恒等式证明" },
+  { section: "高数 · 三角", title: "R 公式 a cosθ ± b sinθ ＝ R cos(θ±α)" },
+  { section: "高数 · 三角", title: "三角方程解的个数（指定区间）" },
+  { section: "高数 · 三角", title: "正弦定理与外接圆 a/sinA＝2R" },
+  { section: "高数 · 三角", title: "扇形：弧长、面积、周长（余下部分要加两条半径）" },
+  { section: "高数 · 三角", title: "球面几何：大圆航行（南北两条路都要算）" },
+  { section: "高数 · 坐标几何", title: "垂直平分线" },
+  { section: "高数 · 坐标几何", title: "圆的方程与切线、切点坐标" },
+  { section: "高数 · 坐标几何", title: "点到圆的最短与最长距离" },
+  { section: "高数 · 坐标几何", title: "轨迹：到定点与到定直线之比" },
+  { section: "高数 · 立体几何", title: "长方体：线与面、面与面的夹角" },
+  { section: "高数 · 统计与概率", title: "排列组合：重复字母的排列、圆排列" },
+  { section: "高数 · 统计与概率", title: "概率与期望值（反求概率）" },
+  { section: "高数 · 统计与概率", title: "正态分布：由概率反求 μ 与 σ" },
+  { section: "高数 · 统计与概率", title: "价格指数与综合指数" },
+  { section: "高数 · 统计与概率", title: "变异系数" },
+  { section: "高数 · 微积分", title: "极限：0/0 型有理化、sin/tan 的极限" },
+  { section: "高数 · 微积分", title: "微分：乘积、商、链式法则" },
+  { section: "高数 · 微积分", title: "隐函数微分" },
+  { section: "高数 · 微积分", title: "相关变化率（related rates）" },
+  { section: "高数 · 微积分", title: "驻点与极值、拐点" },
+  { section: "高数 · 微积分", title: "切线与法线方程" },
+  { section: "高数 · 微积分", title: "积分：换元与部分分式" },
+  { section: "高数 · 微积分", title: "定积分与两曲线围成的面积" },
+];
+
+export const MATH_SYLLABUS_SEED = MATH_TOPICS;
+export const ADVMATH_SYLLABUS_SEED = ADVMATH_TOPICS;
+
 export interface PaperPart {
   name: string;
   marks?: string;

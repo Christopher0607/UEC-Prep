@@ -12,27 +12,13 @@ import {
   SubjectSelect,
   Textarea,
 } from "@/components/ui";
-import { CHINESE_SYLLABUS_SEED } from "@/lib/chinese";
-import { ENGLISH_SYLLABUS_SEED } from "@/lib/english";
 import { SUBJECTS, subjectById } from "@/lib/exam";
+import { SYLLABI, TOTAL_TOPICS, seedTopics } from "@/lib/seed";
 import { newId, update, useData } from "@/lib/store";
-import {
-  ACCOUNTING_SYLLABUS_SEED,
-  BUSINESS_SYLLABUS_SEED,
-  ECONOMICS_SYLLABUS_SEED,
-} from "@/lib/syllabi";
 import { buildTree, countTopics, isChapterSkipped } from "@/lib/topics";
 import type { Chapter } from "@/lib/topics";
 import type { Mastery, SubjectId, Topic } from "@/lib/types";
 
-/** Syllabi already transcribed from the student's own textbooks and teachers. */
-const SEEDS: { subject: SubjectId; label: string; data: { section: string; title: string }[] }[] = [
-  { subject: "english", label: "英文考纲", data: ENGLISH_SYLLABUS_SEED },
-  { subject: "chinese", label: "华文考纲", data: CHINESE_SYLLABUS_SEED },
-  { subject: "accounting", label: "会计目录", data: ACCOUNTING_SYLLABUS_SEED },
-  { subject: "economics", label: "经济目录", data: ECONOMICS_SYLLABUS_SEED },
-  { subject: "business", label: "商业考点", data: BUSINESS_SYLLABUS_SEED },
-];
 
 /**
  * Accepts one topic per line, optionally "组 · 章 | 考点". The " · " inside the
@@ -137,9 +123,18 @@ export default function SyllabusPage() {
     );
   }
 
-  function loadSeed(subject: SubjectId, seed: { section: string; title: string }[]) {
+  const [seedMsg, setSeedMsg] = useState("");
+
+  /** 直接写进数据里 —— 已存在的（同科同标题）跳过，掌握度不会被覆盖。 */
+  function loadSeed(subject: SubjectId) {
+    const n = seedTopics(subject);
     setSubjectId(subject);
-    setDraft(seed.map((t) => `${t.section} | ${t.title}`).join("\n"));
+    setSeedMsg(n ? `已载入 ${subjectById(subject).name} ${n} 个考点。` : `${subjectById(subject).name}的考点已经全在了。`);
+  }
+
+  function loadAllSeeds() {
+    const n = SYLLABI.reduce((acc, x) => acc + seedTopics(x.subjectId), 0);
+    setSeedMsg(n ? `七科合计载入 ${n} 个考点。` : "七科考点都已经在了。");
   }
 
   return (
@@ -319,13 +314,17 @@ export default function SyllabusPage() {
           >
             导入到{subjectById(subjectId).name}
           </Button>
-          {SEEDS.map((seed) => (
-            <Button key={seed.subject} onClick={() => loadSeed(seed.subject, seed.data)}>
-              载入{seed.label}（{seed.data.length}）
+          {SYLLABI.map((x) => (
+            <Button key={x.subjectId} onClick={() => loadSeed(x.subjectId)}>
+              载入{x.label}（{x.data.length}）
             </Button>
           ))}
+          <Button variant="primary" onClick={loadAllSeeds}>
+            七科全部载入（{TOTAL_TOPICS}）
+          </Button>
+          {seedMsg && <span className="text-sm text-ok">{seedMsg}</span>}
           <span className="text-xs text-muted-foreground">
-            数学、高数、商业：把课本目录发给 Claude，让它整理成这个格式，再贴回来。
+            数学与高数的考点是从 2026 预考两张卷子逐题反推的；拿到课本目录后可以照目录重录。
           </span>
         </div>
       </Panel>

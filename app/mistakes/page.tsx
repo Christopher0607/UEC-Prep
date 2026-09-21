@@ -16,6 +16,7 @@ import {
 import { SUBJECTS, subjectById } from "@/lib/exam";
 import { compressImage } from "@/lib/image";
 import { hintPrompt, mistakePrompt } from "@/lib/prompt";
+import { SEED_MISTAKES, seedMistakes } from "@/lib/seed";
 import { newId, update, useData } from "@/lib/store";
 import type { Mistake, MistakeCause, SubjectId } from "@/lib/types";
 
@@ -42,6 +43,7 @@ export default function MistakesPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [filter, setFilter] = useState<SubjectId | "all">("all");
   const [showResolved, setShowResolved] = useState(false);
+  const [seedMsg, setSeedMsg] = useState("");
 
   // 拍照解题 — deliberately separate from the mistake log: this is for a question
   // you are still fighting, and it asks Claude for a nudge, never the answer.
@@ -99,6 +101,25 @@ export default function MistakesPage() {
 
   return (
     <div className="space-y-4">
+
+      <Panel
+        title="载入预考错题"
+        subtitle={`七科预考逐题批改后，值得进错题本的 ${SEED_MISTAKES.length} 道。每道都记了「你写了什么」和「卡在哪一步」—— 这才是错题本的价值，不是答案。`}
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="primary"
+            onClick={() => {
+              const n = seedMistakes();
+              setSeedMsg(n ? `载入 ${n} 道预考错题。` : "预考错题已经全在里面了。");
+            }}
+          >
+            载入（{SEED_MISTAKES.length} 道）
+          </Button>
+          {seedMsg && <span className="text-sm text-ok">{seedMsg}</span>}
+          <span className="text-xs text-muted-foreground">重复点不会重复加。</span>
+        </div>
+      </Panel>
       <Panel
         title="卡住了？先要思路"
         subtitle="这里只会给你考点、第一步和踩坑提醒 —— 不给答案。最后一步必须你自己走完。"

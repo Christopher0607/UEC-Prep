@@ -58,12 +58,10 @@ console.log("--- END ---");
 
 // Chinese syllabus seed
 await page.goto(`${BASE}/syllabus/`, { waitUntil: "networkidle" });
-await page.getByRole("button", { name: "载入华文考纲（老师版）" }).click();
-await page.waitForTimeout(300);
-await page.getByRole("button", { name: /导入到华文/ }).click();
+await page.getByRole("button", { name: /^载入华文（/ }).click();
 await page.waitForTimeout(500);
 const seeded = await panel("华文 · 考点").innerText();
-console.log("chinese topics seeded:", (seeded.match(/删除/g) ?? []).length);
+console.log("chinese topics seeded:", seeded.match(/熟练 \d+ \/ (\d+)/)?.[1] ?? "none");
 console.log("sections:", [...new Set(seeded.split("\n").filter((l) => l.startsWith("试卷")))].join(" | "));
 
 await page.screenshot({ path: `${SHOT}/11-chinese.png`, fullPage: true });

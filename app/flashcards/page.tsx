@@ -11,7 +11,9 @@ import {
   SubjectSelect,
   Textarea,
 } from "@/components/ui";
+import { DECKS, TOTAL_CARDS } from "@/lib/decks";
 import { SUBJECTS, subjectById } from "@/lib/exam";
+import { seedDeck } from "@/lib/seed";
 import { cardGenPrompt } from "@/lib/prompt";
 import { INTERVALS, dueCards, schedule } from "@/lib/srs";
 import { newId, update, useData } from "@/lib/store";
@@ -23,6 +25,7 @@ export default function FlashcardsPage() {
   const [scope, setScope] = useState<SubjectId | "all">("all");
   const [draft, setDraft] = useState("");
   const [revealed, setRevealed] = useState(false);
+  const [deckMsg, setDeckMsg] = useState("");
 
   const queue = useMemo(() => {
     const pool = scope === "all" ? data.cards : data.cards.filter((c) => c.subjectId === scope);
@@ -75,6 +78,60 @@ export default function FlashcardsPage() {
 
   return (
     <div className="space-y-4">
+
+      <Panel
+        title="预制卡组"
+        subtitle={`${DECKS.length} 组、共 ${TOTAL_CARDS} 张，全部来自 2026 预考的逐题批改与老师讲义。点一下直接进牌堆，重复点不会重复加。`}
+      >
+        <div className="space-y-2">
+          {DECKS.map((deck) => {
+            const have = data.cards.filter((c) =>
+              deck.cards.some(([front]) => front === c.front),
+            ).length;
+            return (
+              <div
+                key={deck.id}
+                className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border p-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium">
+                    {deck.name}
+                    <span className="ml-2 text-xs font-normal tnum text-muted-foreground">
+                      {deck.cards.length} 张
+                    </span>
+                    {have > 0 && (
+                      <span className="ml-2 text-xs font-normal tnum text-ok">
+                        已载入 {have}
+                      </span>
+                    )}
+                  </p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{deck.note}</p>
+                </div>
+                <Button
+                  onClick={() => {
+                    const n = seedDeck(deck.id);
+                    setDeckMsg(n ? `「${deck.name}」新增 ${n} 张。` : `「${deck.name}」已经全在牌堆里了。`);
+                  }}
+                >
+                  载入
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Button
+            variant="primary"
+            onClick={() => {
+              const n = DECKS.reduce((acc, d) => acc + seedDeck(d.id), 0);
+              setDeckMsg(n ? `十组全部载入，新增 ${n} 张。` : "十组都已经在牌堆里了。");
+            }}
+          >
+            全部载入（{TOTAL_CARDS} 张）
+          </Button>
+          {deckMsg && <span className="text-sm text-ok">{deckMsg}</span>}
+        </div>
+      </Panel>
       <Panel title="今天要背的" subtitle="忘掉的卡直接退回第 0 格，重新走一遍梯子。">
         <div className="mb-4 flex flex-wrap gap-2 text-sm">
           <button
