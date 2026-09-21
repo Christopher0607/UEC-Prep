@@ -31,15 +31,17 @@ console.log("48h warning:", await page.getByText("头 48 小时考掉四科").is
 
 // One-click seeding — the whole point is that a fresh browser is usable at once.
 console.log("seed panel on empty:", await page.getByText("先把内容装进来").isVisible());
+console.log("progress before:", (await panel("先把内容装进来").innerText()).match(/\d+ \/ \d+/g)?.join(" "));
 await page.getByRole("button", { name: "一键载入全部" }).click();
 await page.waitForTimeout(800);
-const seedLine = await panel("装好了").getByText(/^已载入：/).innerText();
-console.log("seeded:", seedLine);
+console.log("seeded:", await panel("内容已装好").getByText(/^新增：/).innerText());
 await page.reload({ waitUntil: "networkidle" });
 await page.waitForTimeout(800);
-// After seeding the loud panel collapses into a one-liner.
-console.log("seed panel collapsed after reload:", !(await page.getByText("先把内容装进来").isVisible()));
-console.log("seeding is idempotent:", await page.getByRole("button", { name: "补载入缺的" }).isVisible());
+// The panel never hides — it just flips to "已装好" and keeps showing progress.
+console.log("progress after reload:", (await panel("内容已装好").innerText()).match(/\d+ \/ \d+/g)?.join(" "));
+await page.getByRole("button", { name: "补载入缺的" }).click();
+await page.waitForTimeout(600);
+console.log("idempotent:", await panel("内容已装好").getByText("都已经在里面了，没有要补的。").isVisible());
 
 // Seeded data must actually reach the pages.
 await go("/syllabus/");

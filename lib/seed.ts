@@ -18,7 +18,7 @@ import {
   MATH_SYLLABUS_SEED,
 } from "./syllabi";
 import { newId, update } from "./store";
-import type { AppData, Card, Mistake, MistakeCause, SubjectId, Topic } from "./types";
+import type { Card, Mistake, MistakeCause, SubjectId, Topic } from "./types";
 
 export const SYLLABI: { subjectId: SubjectId; label: string; data: { section: string; title: string }[] }[] = [
   { subjectId: "english", label: "英文", data: ENGLISH_SYLLABUS_SEED },
@@ -175,9 +175,4 @@ export function seedEverything(): { topics: number; cards: number; mistakes: num
   const cards = DECKS.reduce((n, deck) => n + seedDeck(deck.id), 0);
   const mistakes = seedMistakes();
   return { topics, cards, mistakes };
-}
-
-/** 数据是不是还空着 —— 决定首页要不要显示「一键载入」。 */
-export function isEmpty(d: AppData): boolean {
-  return d.topics.length === 0 && d.cards.length === 0 && d.mistakes.length === 0;
 }
