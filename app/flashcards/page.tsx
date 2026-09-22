@@ -11,28 +11,74 @@ import {
   SubjectSelect,
   Textarea,
 } from "@/components/ui";
-import { DECKS, TOTAL_CARDS } from "@/lib/decks";
+import { DECKS, TOTAL_CARDS, deckById, deckOfFront } from "@/lib/decks";
 import { SUBJECTS, subjectById } from "@/lib/exam";
-import { seedDeck } from "@/lib/seed";
 import { cardGenPrompt } from "@/lib/prompt";
+import { seedDeck } from "@/lib/seed";
 import { INTERVALS, dueCards, schedule } from "@/lib/srs";
 import { newId, update, useData } from "@/lib/store";
 import type { Card, SubjectId } from "@/lib/types";
 
+/**
+ * 复习范围。三百多张卡混在一起没法背 —— 「今天只背文学常识」必须做得到，
+ * 所以范围除了按科目，还要能按卡组。存成字符串：
+ * "all" ／ 科目 id ／ "deck:<卡组 id>"。
+ */
+type Scope = string;
+
+const OTHER = "__other__";
+
 export default function FlashcardsPage() {
   const data = useData();
-  const [subjectId, setSubjectId] = useState<SubjectId>("business");
-  const [scope, setScope] = useState<SubjectId | "all">("all");
+  const [subjectId, setSubjectId] = useState<SubjectId>("chinese");
+  const [scope, setScope] = useState<Scope>("all");
   const [draft, setDraft] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [deckMsg, setDeckMsg] = useState("");
+  const [openGroup, setOpenGroup] = useState<Set<string>>(new Set());
+  const [openCard, setOpenCard] = useState<string | null>(null);
+  const [pickingScope, setPickingScope] = useState(false);
 
-  const queue = useMemo(() => {
-    const pool = scope === "all" ? data.cards : data.cards.filter((c) => c.subjectId === scope);
-    return dueCards(pool);
+  const inScope = useMemo(() => {
+    if (scope === "all") return data.cards;
+    if (scope.startsWith("deck:")) {
+      const id = scope.slice(5);
+      return data.cards.filter((c) => deckOfFront(c.front) === id);
+    }
+    return data.cards.filter((c) => c.subjectId === scope);
   }, [data.cards, scope]);
 
+  const queue = useMemo(() => dueCards(inScope), [inScope]);
+
+  const scopeName =
+    scope === "all"
+      ? "全部"
+      : scope.startsWith("deck:")
+        ? (deckById(scope.slice(5))?.name ?? "卡组")
+        : subjectById(scope as SubjectId).name;
+
   const current = queue[0];
+
+  /** 卡片库按卡组分堆；不属于任何预制卡组的（自己导入的）单独一堆。 */
+  const groups = useMemo(() => {
+    const byGroup = new Map<string, Card[]>();
+    for (const c of data.cards) {
+      const key = deckOfFront(c.front) ?? OTHER;
+      const list = byGroup.get(key);
+      if (list) list.push(c);
+      else byGroup.set(key, [c]);
+    }
+    return [...byGroup.entries()]
+      .map(([key, cards]) => ({
+        key,
+        name: key === OTHER ? "自己导入的" : (deckById(key)?.name ?? key),
+        cards,
+        due: dueCards(cards).length,
+      }))
+      .sort((a, b) =>
+        a.key === OTHER ? 1 : b.key === OTHER ? -1 : b.cards.length - a.cards.length,
+      );
+  }, [data.cards]);
 
   function answer(remembered: boolean) {
     if (!current) return;
@@ -58,7 +104,7 @@ export default function FlashcardsPage() {
         front: c.front,
         back: c.back,
         box: 0,
-        // New cards are due immediately — with 11 weeks left, nothing waits.
+        // New cards are due immediately — with weeks left, nothing waits.
         dueAt: now,
         lapses: 0,
         createdAt: now,
@@ -72,108 +118,118 @@ export default function FlashcardsPage() {
     update((d) => ({ ...d, cards: d.cards.filter((c) => c.id !== id) }));
   }
 
+  function toggleGroup(key: string) {
+    setOpenGroup((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   const weakTopics = data.topics
     .filter((t) => t.subjectId === subjectId && t.mastery <= 1 && !t.skipped)
     .map((t) => t.title);
 
+  const scopeChip = (value: Scope, label: string, n: number) => (
+    <button
+      key={value}
+      onClick={() => {
+        setScope(value);
+        setRevealed(false);
+        setPickingScope(false);
+      }}
+      className={`rounded-lg border px-2.5 py-1 tnum transition ${
+        scope === value ? "border-accent text-accent" : "hover:bg-surface-2"
+      }`}
+    >
+      {label} {n}
+    </button>
+  );
+
+  /** 背面一律按行排版：以 ▸ 开头的那行是答案，突出显示。 */
+  const backLines = (back: string, strong: string, weak: string) =>
+    back.split("\n").map((line, i) => (
+      <p
+        key={i}
+        className={`whitespace-pre-wrap break-words leading-relaxed ${
+          line.startsWith("▸") ? strong : weak
+        }`}
+      >
+        {line}
+      </p>
+    ));
+
   return (
     <div className="space-y-4">
-
       <Panel
-        title="预制卡组"
-        subtitle={`${DECKS.length} 组、共 ${TOTAL_CARDS} 张，全部来自 2026 预考的逐题批改与老师讲义。点一下直接进牌堆，重复点不会重复加。`}
+        title="今天要背的"
+        subtitle="忘掉的卡直接退回第 0 格，重新走一遍梯子。三百多张混在一起没法背 —— 用「换一组」先挑一组。"
       >
-        <div className="space-y-2">
-          {DECKS.map((deck) => {
-            const have = data.cards.filter((c) =>
-              deck.cards.some(([front]) => front === c.front),
-            ).length;
-            return (
-              <div
-                key={deck.id}
-                className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border p-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">
-                    {deck.name}
-                    <span className="ml-2 text-xs font-normal tnum text-muted-foreground">
-                      {deck.cards.length} 张
-                    </span>
-                    {have > 0 && (
-                      <span className="ml-2 text-xs font-normal tnum text-ok">
-                        已载入 {have}
-                      </span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 text-sm text-muted-foreground">{deck.note}</p>
-                </div>
-                <Button
-                  onClick={() => {
-                    const n = seedDeck(deck.id);
-                    setDeckMsg(n ? `「${deck.name}」新增 ${n} 张。` : `「${deck.name}」已经全在牌堆里了。`);
-                  }}
-                >
-                  载入
-                </Button>
+        <ClientOnly>
+          {/* 范围默认收起 —— 十个卡组平铺会把卡片挤出第一屏。 */}
+          <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+            <span className="text-muted-foreground">范围</span>
+            <span className="font-medium">{scopeName}</span>
+            <span className="tnum text-xs text-muted-foreground">
+              到期 {queue.length} / 共 {inScope.length}
+            </span>
+            <Button onClick={() => setPickingScope((v) => !v)}>
+              {pickingScope ? "收起" : "换一组"}
+            </Button>
+          </div>
+
+          {pickingScope && (
+            <div className="mb-4 space-y-2">
+              <div className="flex flex-wrap gap-2 text-sm">
+                {scopeChip("all", "全部", dueCards(data.cards).length)}
+                {SUBJECTS.map((s) =>
+                  scopeChip(
+                    s.id,
+                    s.short,
+                    dueCards(data.cards.filter((c) => c.subjectId === s.id)).length,
+                  ),
+                )}
               </div>
-            );
-          })}
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Button
-            variant="primary"
-            onClick={() => {
-              const n = DECKS.reduce((acc, d) => acc + seedDeck(d.id), 0);
-              setDeckMsg(n ? `十组全部载入，新增 ${n} 张。` : "十组都已经在牌堆里了。");
-            }}
-          >
-            全部载入（{TOTAL_CARDS} 张）
-          </Button>
-          {deckMsg && <span className="text-sm text-ok">{deckMsg}</span>}
-        </div>
-      </Panel>
-      <Panel title="今天要背的" subtitle="忘掉的卡直接退回第 0 格，重新走一遍梯子。">
-        <div className="mb-4 flex flex-wrap gap-2 text-sm">
-          <button
-            onClick={() => setScope("all")}
-            className={`rounded-lg border px-2.5 py-1 ${scope === "all" ? "border-accent" : ""}`}
-          >
-            全部
-          </button>
-          {SUBJECTS.map((s) => {
-            const n = dueCards(data.cards.filter((c) => c.subjectId === s.id)).length;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setScope(s.id)}
-                className={`rounded-lg border px-2.5 py-1 tnum ${scope === s.id ? "border-accent" : ""}`}
-              >
-                {s.short} {n}
-              </button>
-            );
-          })}
-        </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {groups.map((g) =>
+                  g.key === OTHER ? null : scopeChip(`deck:${g.key}`, g.name, g.due),
+                )}
+              </div>
+            </div>
+          )}
+        </ClientOnly>
 
         <ClientOnly>
           {!current ? (
             <Empty>
               {data.cards.length === 0
-                ? "还没有卡片。下面批量导入，或让 Claude 帮你生成。"
-                : "到期的都背完了。明天再来。"}
+                ? "还没有卡片。到下面「预制卡组」一键载入，或自己批量导入。"
+                : inScope.length === 0
+                  ? "这个范围里还没有卡片。"
+                  : "这个范围到期的都背完了 —— 换个范围，或明天再来。"}
             </Empty>
           ) : (
-            <div className="rounded-2xl border p-6 text-center">
-              <p className="mb-1 text-xs tnum text-muted-foreground">
+            <div className="rounded-2xl border p-5 sm:p-6">
+              <p className="mb-1 text-center text-xs tnum text-muted-foreground">
                 剩 {queue.length} 张 · {subjectById(current.subjectId).name} · 第 {current.box} 格
                 {current.lapses > 0 && ` · 忘过 ${current.lapses} 次`}
               </p>
-              <p className="mt-4 whitespace-pre-wrap text-lg font-medium">{current.front}</p>
+              <p className="mt-4 whitespace-pre-wrap break-words text-center text-lg font-medium leading-relaxed">
+                {current.front}
+              </p>
 
               {revealed ? (
                 <>
                   <hr className="my-5" />
-                  <p className="whitespace-pre-wrap text-base">{current.back}</p>
-                  <div className="mt-6 flex justify-center gap-3">
+                  <div className="space-y-1.5 text-left">
+                    {backLines(
+                      current.back,
+                      "text-lg font-semibold text-accent",
+                      "text-base text-muted-foreground",
+                    )}
+                  </div>
+                  <div className="mt-6 flex flex-wrap justify-center gap-3">
                     <Button variant="danger" onClick={() => answer(false)}>
                       忘了
                     </Button>
@@ -183,10 +239,150 @@ export default function FlashcardsPage() {
                   </div>
                 </>
               ) : (
-                <Button className="mt-6" onClick={() => setRevealed(true)}>
-                  先自己想 —— 想好了点这里
-                </Button>
+                <div className="mt-6 flex justify-center">
+                  <Button onClick={() => setRevealed(true)}>先自己想 —— 想好了点这里</Button>
+                </div>
               )}
+            </div>
+          )}
+        </ClientOnly>
+      </Panel>
+
+      <Panel
+        title="预制卡组"
+        subtitle={`${DECKS.length} 组、共 ${TOTAL_CARDS} 张，全部来自 2026 预考的逐题批改与老师讲义。重复点不会重复加。`}
+      >
+        <ClientOnly>
+          <div className="space-y-2">
+            {DECKS.map((deck) => {
+              const have = data.cards.filter((c) => deckOfFront(c.front) === deck.id).length;
+              return (
+                <div
+                  key={deck.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border p-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">
+                      {deck.name}
+                      <span className="ml-2 text-xs font-normal tnum text-muted-foreground">
+                        {deck.cards.length} 张
+                      </span>
+                      {have > 0 && (
+                        <span className="ml-2 text-xs font-normal tnum text-ok">已载入 {have}</span>
+                      )}
+                    </p>
+                    <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                      {deck.note}
+                    </p>
+                  </div>
+                  {have > 0 && (
+                    <Button
+                      onClick={() => {
+                        setScope(`deck:${deck.id}`);
+                        setRevealed(false);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    >
+                      只背这组
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => {
+                      const n = seedDeck(deck.id);
+                      setDeckMsg(
+                        n ? `「${deck.name}」新增 ${n} 张。` : `「${deck.name}」已经全在牌堆里了。`,
+                      );
+                    }}
+                  >
+                    载入
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button
+              variant="primary"
+              onClick={() => {
+                const n = DECKS.reduce((acc, d) => acc + seedDeck(d.id), 0);
+                setDeckMsg(n ? `全部载入，新增 ${n} 张。` : "十组都已经在牌堆里了。");
+              }}
+            >
+              全部载入（{TOTAL_CARDS} 张）
+            </Button>
+            {deckMsg && <span className="text-sm text-ok">{deckMsg}</span>}
+          </div>
+        </ClientOnly>
+      </Panel>
+
+      <Panel title="卡片库" subtitle={`共 ${data.cards.length} 张，按卡组分开。点一张展开看全文。`}>
+        <ClientOnly>
+          {data.cards.length === 0 ? (
+            <Empty>空的。上面一键载入。</Empty>
+          ) : (
+            <div className="space-y-2">
+              {groups.map((g) => {
+                const isOpen = openGroup.has(g.key);
+                return (
+                  <div key={g.key} className="overflow-hidden rounded-xl border">
+                    <button
+                      onClick={() => toggleGroup(g.key)}
+                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-surface-2"
+                    >
+                      <span className="w-3 shrink-0 text-muted-foreground">{isOpen ? "▾" : "▸"}</span>
+                      <span className="min-w-0 flex-1 font-medium">{g.name}</span>
+                      <span className="shrink-0 text-xs tnum text-muted-foreground">
+                        {g.cards.length} 张
+                      </span>
+                      {g.due > 0 && (
+                        <span className="shrink-0 text-xs tnum text-accent">到期 {g.due}</span>
+                      )}
+                    </button>
+
+                    {isOpen && (
+                      <ul className="divide-y border-t">
+                        {g.cards.map((c) => {
+                          const expanded = openCard === c.id;
+                          return (
+                            <li key={c.id} className="px-3 py-2.5 text-sm">
+                              <div className="flex items-start gap-3">
+                                <span className="w-9 shrink-0 pt-0.5 text-xs tnum text-muted-foreground">
+                                  {subjectById(c.subjectId).short}
+                                  {c.box}
+                                </span>
+                                <button
+                                  onClick={() => setOpenCard(expanded ? null : c.id)}
+                                  className="min-w-0 flex-1 text-left"
+                                >
+                                  <span className="block whitespace-pre-wrap break-words leading-relaxed">
+                                    {c.front}
+                                  </span>
+                                  {!expanded && (
+                                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                                      点开看答案
+                                    </span>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => remove(c.id)}
+                                  className="shrink-0 text-xs text-muted-foreground transition hover:text-danger"
+                                >
+                                  删除
+                                </button>
+                              </div>
+                              {expanded && (
+                                <div className="mt-2 space-y-1 border-l-2 border-accent pl-3">
+                                  {backLines(c.back, "font-semibold text-accent", "text-muted-foreground")}
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </ClientOnly>
@@ -201,7 +397,9 @@ export default function FlashcardsPage() {
             rows={6}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={"机会成本的定义是什么？|做出选择时，所放弃的其他选项中价值最高的那一个。\n什么是需求定律？|价格上升，需求量下降；价格下降，需求量上升（其他条件不变）。"}
+            placeholder={
+              "机会成本的定义是什么？|做出选择时，所放弃的其他选项中价值最高的那一个。\n什么是需求定律？|价格上升，需求量下降；价格下降，需求量上升（其他条件不变）。"
+            }
           />
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -222,35 +420,6 @@ export default function FlashcardsPage() {
             }
           />
         </div>
-      </Panel>
-
-      <Panel title="卡片库" subtitle={`共 ${data.cards.length} 张`}>
-        <ClientOnly>
-          {data.cards.length === 0 ? (
-            <Empty>空的。</Empty>
-          ) : (
-            <ul className="divide-y">
-              {data.cards.map((c) => (
-                <li key={c.id} className="group flex items-center gap-3 py-2 text-sm">
-                  <span className="w-8 shrink-0 text-xs tnum text-muted-foreground">
-                    {subjectById(c.subjectId).short}
-                    {c.box}
-                  </span>
-                  <span className="flex-1 truncate">{c.front}</span>
-                  <span className="hidden flex-1 truncate text-muted-foreground sm:inline">
-                    {c.back}
-                  </span>
-                  <button
-                    onClick={() => remove(c.id)}
-                    className="shrink-0 text-xs text-muted-foreground opacity-0 transition hover:text-danger group-hover:opacity-100"
-                  >
-                    删除
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </ClientOnly>
       </Panel>
     </div>
   );

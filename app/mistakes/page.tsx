@@ -285,10 +285,17 @@ export default function MistakesPage() {
                       {m.reviewCount > 0 && <span className="tnum">复习过 {m.reviewCount} 次</span>}
                     </div>
 
-                    <p className="whitespace-pre-wrap text-sm">{m.question}</p>
+                    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                      {m.question}
+                    </p>
+                    {m.myWork && (
+                      <p className="mt-2 whitespace-pre-wrap break-words border-l-2 border-danger pl-3 text-sm leading-relaxed text-muted-foreground">
+                        我写的：{m.myWork}
+                      </p>
+                    )}
                     {m.stuckAt && (
-                      <p className="mt-2 border-l-2 border-warn pl-3 text-sm text-muted-foreground">
-                        卡在：{m.stuckAt}
+                      <p className="mt-2 whitespace-pre-wrap break-words border-l-2 border-ok pl-3 text-sm leading-relaxed">
+                        正解／卡在哪：{m.stuckAt}
                       </p>
                     )}
                     {m.photo && (
