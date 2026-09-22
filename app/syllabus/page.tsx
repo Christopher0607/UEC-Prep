@@ -324,7 +324,8 @@ export default function SyllabusPage() {
           </Button>
           {seedMsg && <span className="text-sm text-ok">{seedMsg}</span>}
           <span className="text-xs text-muted-foreground">
-            数学与高数的考点是从 2026 预考两张卷子逐题反推的；拿到课本目录后可以照目录重录。
+            数学、高数全部考点，以及会计 Book 3 的小节，是从 2026
+            预考的卷子逐题反推的；拿到课本目录后可以照目录重录。
           </span>
         </div>
       </Panel>

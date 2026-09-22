@@ -43,7 +43,7 @@ export default function FlashcardsPage() {
     if (scope === "all") return data.cards;
     if (scope.startsWith("deck:")) {
       const id = scope.slice(5);
-      return data.cards.filter((c) => deckOfFront(c.front) === id);
+      return data.cards.filter((c) => deckOfFront(c.front, c.subjectId) === id);
     }
     return data.cards.filter((c) => c.subjectId === scope);
   }, [data.cards, scope]);
@@ -63,7 +63,7 @@ export default function FlashcardsPage() {
   const groups = useMemo(() => {
     const byGroup = new Map<string, Card[]>();
     for (const c of data.cards) {
-      const key = deckOfFront(c.front) ?? OTHER;
+      const key = deckOfFront(c.front, c.subjectId) ?? OTHER;
       const list = byGroup.get(key);
       if (list) list.push(c);
       else byGroup.set(key, [c]);
@@ -255,13 +255,13 @@ export default function FlashcardsPage() {
         <ClientOnly>
           <div className="space-y-2">
             {DECKS.map((deck) => {
-              const have = data.cards.filter((c) => deckOfFront(c.front) === deck.id).length;
+              const have = data.cards.filter((c) => deckOfFront(c.front, c.subjectId) === deck.id).length;
               return (
                 <div
                   key={deck.id}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border p-3"
+                  className="rounded-xl border p-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2"
                 >
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 sm:flex-1">
                     <p className="font-medium">
                       {deck.name}
                       <span className="ml-2 text-xs font-normal tnum text-muted-foreground">
@@ -275,27 +275,29 @@ export default function FlashcardsPage() {
                       {deck.note}
                     </p>
                   </div>
-                  {have > 0 && (
+                  <div className="mt-2.5 flex gap-2 sm:mt-0 sm:contents">
+                    {have > 0 && (
+                      <Button
+                        onClick={() => {
+                          setScope(`deck:${deck.id}`);
+                          setRevealed(false);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        只背这组
+                      </Button>
+                    )}
                     <Button
                       onClick={() => {
-                        setScope(`deck:${deck.id}`);
-                        setRevealed(false);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
+                        const n = seedDeck(deck.id);
+                        setDeckMsg(
+                          n ? `「${deck.name}」新增 ${n} 张。` : `「${deck.name}」已经全在牌堆里了。`,
+                        );
                       }}
                     >
-                      只背这组
+                      载入
                     </Button>
-                  )}
-                  <Button
-                    onClick={() => {
-                      const n = seedDeck(deck.id);
-                      setDeckMsg(
-                        n ? `「${deck.name}」新增 ${n} 张。` : `「${deck.name}」已经全在牌堆里了。`,
-                      );
-                    }}
-                  >
-                    载入
-                  </Button>
+                  </div>
                 </div>
               );
             })}
@@ -305,7 +307,7 @@ export default function FlashcardsPage() {
               variant="primary"
               onClick={() => {
                 const n = DECKS.reduce((acc, d) => acc + seedDeck(d.id), 0);
-                setDeckMsg(n ? `全部载入，新增 ${n} 张。` : "十组都已经在牌堆里了。");
+                setDeckMsg(n ? `全部载入，新增 ${n} 张。` : `${DECKS.length} 组都已经在牌堆里了。`);
               }}
             >
               全部载入（{TOTAL_CARDS} 张）

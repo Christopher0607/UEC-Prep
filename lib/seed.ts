@@ -122,10 +122,10 @@ export function seedDeck(deckId: string): number {
   if (!deck) return 0;
   let added = 0;
   update((d) => {
-    const have = new Set(d.cards.map((c) => c.front));
+    const have = new Set(d.cards.map((c) => `${c.subjectId}|${c.front}`));
     const now = nowISO();
     const fresh: Card[] = deck.cards
-      .filter(([front]) => !have.has(front))
+      .filter(([front]) => !have.has(`${deck.subjectId}|${front}`))
       .map(([front, back]) => ({
         id: newId(),
         subjectId: deck.subjectId,

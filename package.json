@@ -6,7 +6,9 @@
     "dev": "next dev -p 3401",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit:data": "npx --yes tsx audit-data.mts",
+    "audit:site": "node audit-site.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

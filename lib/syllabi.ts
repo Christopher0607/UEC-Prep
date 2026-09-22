@@ -141,16 +141,80 @@ const ACC_BOOK2: [string, string[]][] = [
   ]],
 ];
 
-/** 会计学：Book 3（第 23–30 章）。27 和 28 必有一个出在最后一题。 */
+/**
+ * 会计学：Book 3（第 23–30 章）。27 和 28 必有一个出在最后一题。
+ *
+ * Book 1／2 的小节号照课本目录录入；**Book 3 的小节是按 2026 预考试卷二逐题
+ * 反推 ＋ 统考范围常规结构写的**，拿到课本目录后照目录重录。
+ * 不写小节就只剩 8 个章级考点 —— 而试卷二的三大题全在这一册，
+ * 那样等于整本最值钱的书没有覆盖表。
+ */
 const ACC_BOOK3: [string, string[]][] = [
-  ["23 Financial statements for limited company – Introduction", []],
-  ["24 Financial statements for limited company – Shares, loan notes, dividend and reserves", []],
-  ["25 Financial statements for limited company – IFRS 18", []],
-  ["26 Financial statements for limited company – IAS 7 Statement of cash flows", []],
-  ["27 Analysis of accounting ratios ⭐", []],
-  ["28 Budgeting ⭐", []],
-  ["29 Introduction to cost analysis", []],
-  ["30 Cost – Volume – Profit analysis", []],
+  ["23 Financial statements for limited company – Introduction", [
+    "23.1 有限公司的性质：法人地位、有限责任、与独资／合伙的差别",
+    "23.2 Private limited (Sdn Bhd) 与 public limited (Bhd) 的分别",
+    "23.3 有限公司的组成文件与法定账簿",
+    "23.4 股本相关用词：authorised / issued / called-up / paid-up capital",
+  ]],
+  ["24 Financial statements for limited company – Shares, loan notes, dividend and reserves", [
+    "24.1 普通股与优先股：表决权、股息次序、参与与否",
+    "24.2 Loan notes / debentures 是负债不是股本 —— 利息进损益，不是分配",
+    "24.3 发行股份的分录（按面值、溢价 share premium）",
+    "24.4 红利股 bonus issue：来源、分录、对股东权益总额与流动性的影响",
+    "24.5 配股 rights issue 与 bonus issue 的分别",
+    "24.6 已宣布股息 interim / final dividend 的分录与呈报位置",
+    "24.7 Revenue reserve 与 capital reserve 的界线（retained earnings vs share premium / revaluation）",
+  ]],
+  ["25 Financial statements for limited company – IFRS 18", [
+    "25.1 IFRS 18 的五个类别：operating / investing / financing / income tax / discontinued",
+    "25.2 Statement of profit or loss and other comprehensive income 的排列",
+    "25.3 Statement of financial position 的排列与流动／非流动划分",
+    "25.4 Statement of changes in equity 的行与列",
+    "25.5 期末调整并入公司财报：折旧、应计、预付、呆账",
+    "25.6 公司税 taxation 的估计数与上期差额处理",
+  ]],
+  ["26 Financial statements for limited company – IAS 7 Statement of cash flows", [
+    "26.1 三大类现金流：operating / investing / financing 的归类判断",
+    "26.2 间接法：由税前利润倒推营业现金流的调整顺序",
+    "26.3 非现金项目加回：折旧、摊销、处置损益",
+    "26.4 营运资本变动的方向（存货／应收增加＝流出）",
+    "26.5 利息、股息、税款付出的列示位置",
+    "26.6 非流动资产购置与处置金额的还原（用 T 账户倒推）",
+    "26.7 期末现金及现金等价物的对账",
+  ]],
+  ["27 Analysis of accounting ratios ⭐", [
+    "27.1 获利能力：gross / profit margin、ROCE、mark-up 与 margin 的换算",
+    "27.2 流动性：current ratio、quick (acid test) ratio",
+    "27.3 营运效率：inventory turnover、receivables / payables days、asset turnover",
+    "27.4 资本结构：gearing 的算法与高低的方向含义",
+    "27.5 投资比率：EPS、dividend per share、dividend cover、P/E",
+    "27.6 比率的解读：写因果链，不能只写「比较好」",
+    "27.7 比率分析的局限（历史成本、单一年度、行业差异）",
+  ]],
+  ["28 Budgeting ⭐", [
+    "28.1 预算的目的与预算期间",
+    "28.2 销售预算与生产预算（含期初期末存货的推算）",
+    "28.3 原料采购预算：用量 vs 采购量",
+    "28.4 人工与生产费用预算",
+    "28.5 现金预算 cash budget：收现／付现的时间差是考点",
+    "28.6 预算式财务报表 budgeted statements",
+    "28.7 差异的解释与预算控制",
+  ]],
+  ["29 Introduction to cost analysis", [
+    "29.1 成本分类：direct / indirect、product / period",
+    "29.2 固定、变动与半变动成本（high-low method 分离）",
+    "29.3 制造成本表：prime cost、production cost、cost of goods manufactured",
+    "29.4 制造业的三种存货（原料、在制品、制成品）",
+    "29.5 吸收成本法与变动成本法的利润差",
+  ]],
+  ["30 Cost – Volume – Profit analysis", [
+    "30.1 边际贡献 contribution 与 contribution margin ratio",
+    "30.2 损益平衡点：单位法与金额法",
+    "30.3 目标利润所需销量",
+    "30.4 安全边际 margin of safety",
+    "30.5 损益平衡图的画法与读图",
+    "30.6 CVP 的假设与局限",
+  ]],
 ];
 
 function flatten(book: string, chapters: [string, string[]][]) {
@@ -646,6 +710,62 @@ export const PAPER_STRUCTURES: PaperStructure[] = [
       "上册 35 分、下册 35 分完全等重，但上册有 62 个小节、下册只有 42 个。同样一节内容，下册值 0.83 分、上册只值 0.56 分 —— 下册每小时的回报约是上册的 1.5 倍。落后的话，先补下册。",
       "选择题 30 分占全科 30% —— 是整科最便宜的分，值得单独刷。",
       "上册章号跟《试题分类集》错位，覆盖表里已并排标出分类集章号；下册两边章号一致，直接按章号找题就行。",
+    ],
+  },
+  {
+    subjectId: "english",
+    papers: [
+      {
+        name: "Paper 1（100 分钟）",
+        parts: [
+          { name: "Section A · Summary Writing", marks: "15%", detail: "摘要写作" },
+          { name: "Section B · Essay Writing", marks: "35%", detail: "作文，五层分析 Individual→Global" },
+        ],
+      },
+      {
+        name: "Paper 2（80 分钟）",
+        parts: [
+          { name: "Section A Part I", marks: "—", detail: "Matching Paragraph（段落配对）" },
+          { name: "Section A Part II", marks: "—", detail: "Vocabulary（词义）" },
+          { name: "Section A Part III", marks: "—", detail: "Comprehension（阅读理解）" },
+          { name: "Section B Part I", marks: "—", detail: "Error Identification（找错）" },
+          { name: "Section B Part II", marks: "—", detail: "Word Forms（词形变化）" },
+        ],
+      },
+    ],
+    takeaways: [
+      "2026 预考 Paper 2 官方 25/40（62.5%）。逐题数出 27–28 题答对（共 50 题）却只得 25/40 —— 卷二不是每题 1 分，Section B 很可能每题 0.5 分。拿到卷头分值表后要核对。",
+      "Paper 1 占英文的一半（Summary 15% ＋ Essay 35%），但答卷至今没拿回来 —— 这是七科里最该追的一份卷。",
+      "Vocabulary 8/10 对 Word Forms 2/10 —— 认得出但产不出。Word Forms 先判词性再想变形，别直接改词尾。",
+      "英文是 10/21 上午第一场；而且会计八道错题里七道卡在英文术语，数学与高数也是英文出题 —— 补英文等于同时补四科。",
+    ],
+  },
+  {
+    subjectId: "chinese",
+    papers: [
+      {
+        name: "试卷一 写作（105 分钟）",
+        parts: [
+          { name: "甲组 作文", marks: "30%", detail: "5 题选 1，至少 600 字，不可用诗歌或戏剧体裁" },
+          { name: "乙组 应用文", marks: "10%", detail: "2 题选 1，新式应用文格式" },
+        ],
+      },
+      {
+        name: "试卷二 语文测验（105 分钟）",
+        parts: [
+          { name: "甲组(I) 语文基础知识", marks: "8%", detail: "6 题全答：字音／错别字／感情色彩／成语／语病／仿写" },
+          { name: "甲组(II) 文学文化常识", marks: "10%", detail: "6 题全答：文体／作家配对／诗派／世称／默写／称谓" },
+          { name: "乙组 现代文阅读", marks: "24%", detail: "2 篇 × 5 题全答" },
+          { name: "丙组 古诗文阅读", marks: "18%", detail: "3 篇：课内文言文／课外文言文／古诗" },
+        ],
+      },
+    ],
+    takeaways: [
+      "2026 预考试卷二 13/60（21.7%），七科最低。但卷二 60 分里有 36 分（语文基础 8 ＋ 文学常识 10 ＋ 古诗文 18）是纯记忆或范围固定的 —— 这一科不是能力问题，是账没记。",
+      "现代文阅读 24 分有八种固定题型，每种都有采分骨架。写够段数就有分：3 分的修辞题只写「比喻」两个字最多拿 1 分。",
+      "应用文「内容 5%」是九到十个格子，每格 0.5–2%。题目印出来的地址必须照抄进公函版头 —— 那是送分。",
+      "作文评分附则：内容评 E 等 → 语言、结构最高只能评 C 等。切题是天花板，不是及格线。",
+      "诗词默写按「统考未考过的先背」—— 2026 预考考的《声声慢》正是那九首之一，这个优先级已验证过。",
     ],
   },
   {
