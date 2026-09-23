@@ -101,13 +101,34 @@ await page.getByRole("button", { name: /^记得/ }).click();
 await page.waitForTimeout(400);
 const after = (await panel("今天要背的").innerText()).match(/剩 (\d+) 张/)?.[1];
 ok("点「记得」后队列减少", Number(after) === Number(before) - 1, `${before} → ${after}`);
-await page.getByRole("button", { name: "忘了" }).count().then(async () => {
-  await page.getByRole("button", { name: /先自己想/ }).click();
-  await page.waitForTimeout(250);
-  await page.getByRole("button", { name: "忘了" }).click();
-  await page.waitForTimeout(300);
-});
-ok("点「忘了」不报错", true);
+// 当前卡的正面 = 「剩 N 张 · …」那行的下一行。
+const frontNow = async () => {
+  const lines = (await panel("今天要背的").innerText()).split("\n").map((s) => s.trim()).filter(Boolean);
+  const i = lines.findIndex((l) => /^剩 \d+ 张/.test(l));
+  return i < 0 ? "" : (lines[i + 1] ?? "");
+};
+const f0 = await frontNow();
+await page.getByRole("button", { name: "跳过" }).click();
+await page.waitForTimeout(350);
+const f1 = await frontNow();
+ok("「跳过」换到另一张卡", !!f1 && f1 !== f0, `${f0.slice(0, 14)} → ${f1.slice(0, 14)}`);
+// 回归测试：「忘了」曾经把同一张卡原地再发一次 —— 第 0 格＝0 天＝立刻到期，
+// 而队列按忘过次数倒序，刚忘过的又排第一。不会的卡因此永远翻不过去。
+await page.getByRole("button", { name: /先自己想/ }).click();
+await page.waitForTimeout(250);
+await page.getByRole("button", { name: /^忘了/ }).click();
+await page.waitForTimeout(400);
+const f2 = await frontNow();
+ok("点「忘了」不会卡在同一张", !!f2 && f2 !== f1, `${f1.slice(0, 14)} → ${f2.slice(0, 14)}`);
+await page.getByRole("button", { name: "弱项优先" }).click();
+await page.waitForTimeout(400);
+ok("能切到随机顺序", await page.getByRole("button", { name: "随机中" }).isVisible());
+const r1 = await frontNow();
+await page.getByRole("button", { name: "重新洗牌" }).click();
+await page.waitForTimeout(400);
+ok("「重新洗牌」后还有卡可背", !!(await frontNow()), r1.slice(0, 14));
+await page.getByRole("button", { name: "随机中" }).click();
+await page.waitForTimeout(300);
 const lib = panel("卡片库");
 await lib.getByText("华文 · 文学常识（老师讲义 162 条）").click();
 await page.waitForTimeout(400);

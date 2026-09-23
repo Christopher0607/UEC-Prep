@@ -14,6 +14,12 @@ function addDays(days: number): string {
 export function schedule(card: Card, remembered: boolean): Card {
   // A lapse goes back to box 0, not box-1. If you forgot it, you did not
   // half-remember it, and a card you keep forgetting deserves the full ladder.
+  //
+  // Box 0 is 0 days, i.e. due again immediately — deliberate, but it means the
+  // review page must push a lapsed card to the back of the session queue itself.
+  // Without that it is served again on the very next render (dueCards sorts by
+  // lapses descending, and this card just gained one), so a card you do not know
+  // becomes impossible to get past. See 跳过 / sendToBack in app/flashcards.
   const box = remembered ? Math.min(card.box + 1, MAX_BOX) : 0;
   return {
     ...card,

@@ -28,6 +28,22 @@ type Scope = string;
 
 const OTHER = "__other__";
 
+/** 出牌顺序。弱项优先是默认，但想随便刷就得随便刷得了。 */
+type Order = "weak" | "random";
+
+/**
+ * 同一个种子下顺序固定 —— 每答一张卡 data 就变一次，要是每次重算都重新洗，
+ * 牌面会在你眼前乱跳。
+ */
+function hash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 export default function FlashcardsPage() {
   const data = useData();
   const [subjectId, setSubjectId] = useState<SubjectId>("chinese");
@@ -38,6 +54,15 @@ export default function FlashcardsPage() {
   const [openGroup, setOpenGroup] = useState<Set<string>>(new Set());
   const [openCard, setOpenCard] = useState<string | null>(null);
   const [pickingScope, setPickingScope] = useState(false);
+  const [order, setOrder] = useState<Order>("weak");
+  const [seed, setSeed] = useState(() => String(Math.random()));
+  /**
+   * 这一轮里「先放一放」的卡，按放下的先后排在队尾。
+   * 「忘了」也走这里 —— 否则它会被原地再发一次：退回第 0 格意味着 0 天后到期，
+   * 也就是现在；而队列按忘过的次数倒序排，刚忘过的那张又正好排第一。
+   * 结果就是不会的卡永远翻不过去。
+   */
+  const [deferred, setDeferred] = useState<string[]>([]);
 
   const inScope = useMemo(() => {
     if (scope === "all") return data.cards;
@@ -48,7 +73,20 @@ export default function FlashcardsPage() {
     return data.cards.filter((c) => c.subjectId === scope);
   }, [data.cards, scope]);
 
-  const queue = useMemo(() => dueCards(inScope), [inScope]);
+  const queue = useMemo(() => {
+    const base = dueCards(inScope);
+    const ordered =
+      order === "random"
+        ? [...base].sort((a, b) => hash(a.id + seed) - hash(b.id + seed))
+        : base;
+    if (!deferred.length) return ordered;
+    const back = new Set(deferred);
+    const front = ordered.filter((c) => !back.has(c.id));
+    const tail = deferred
+      .map((id) => ordered.find((c) => c.id === id))
+      .filter((c): c is Card => !!c);
+    return [...front, ...tail];
+  }, [inScope, order, seed, deferred]);
 
   const scopeName =
     scope === "all"
@@ -80,10 +118,25 @@ export default function FlashcardsPage() {
       );
   }, [data.cards]);
 
+  /** 挪到这一轮的队尾。同一张卡重复放，只保留最后一次的位置。 */
+  function sendToBack(id: string) {
+    setDeferred((prev) => [...prev.filter((x) => x !== id), id]);
+  }
+
   function answer(remembered: boolean) {
     if (!current) return;
     const next = schedule(current, remembered);
     update((d) => ({ ...d, cards: d.cards.map((c) => (c.id === next.id ? next : c)) }));
+    // 忘了的卡今天还要再见，但要等一圈 —— 不能立刻又是它。
+    if (remembered) setDeferred((prev) => prev.filter((x) => x !== next.id));
+    else sendToBack(next.id);
+    setRevealed(false);
+  }
+
+  /** 不给分、不改进度，纯粹换下一张。 */
+  function skip() {
+    if (!current) return;
+    sendToBack(current.id);
     setRevealed(false);
   }
 
@@ -164,7 +217,7 @@ export default function FlashcardsPage() {
     <div className="space-y-4">
       <Panel
         title="今天要背的"
-        subtitle="忘掉的卡直接退回第 0 格，重新走一遍梯子。三百多张混在一起没法背 —— 用「换一组」先挑一组。"
+        subtitle="忘掉的卡退回第 0 格，挪到队尾，这一轮还会再见 —— 但不会原地卡住你。想跳就点「跳过」，想打乱就切「随机」。三百多张混在一起没法背，先用「换一组」挑一组。"
       >
         <ClientOnly>
           {/* 范围默认收起 —— 十个卡组平铺会把卡片挤出第一屏。 */}
@@ -177,6 +230,28 @@ export default function FlashcardsPage() {
             <Button onClick={() => setPickingScope((v) => !v)}>
               {pickingScope ? "收起" : "换一组"}
             </Button>
+            <Button
+              variant={order === "random" ? "primary" : "default"}
+              onClick={() => {
+                setOrder((v) => (v === "weak" ? "random" : "weak"));
+                setSeed(String(Math.random()));
+                setDeferred([]);
+                setRevealed(false);
+              }}
+            >
+              {order === "random" ? "随机中" : "弱项优先"}
+            </Button>
+            {order === "random" && (
+              <Button
+                onClick={() => {
+                  setSeed(String(Math.random()));
+                  setDeferred([]);
+                  setRevealed(false);
+                }}
+              >
+                重新洗牌
+              </Button>
+            )}
           </div>
 
           {pickingScope && (
@@ -231,7 +306,7 @@ export default function FlashcardsPage() {
                   </div>
                   <div className="mt-6 flex flex-wrap justify-center gap-3">
                     <Button variant="danger" onClick={() => answer(false)}>
-                      忘了
+                      忘了{queue.length > 1 && " —— 等一圈再来"}
                     </Button>
                     <Button variant="primary" onClick={() => answer(true)}>
                       记得（{INTERVALS[Math.min(current.box + 1, INTERVALS.length - 1)]} 天后再见）
@@ -239,8 +314,9 @@ export default function FlashcardsPage() {
                   </div>
                 </>
               ) : (
-                <div className="mt-6 flex justify-center">
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
                   <Button onClick={() => setRevealed(true)}>先自己想 —— 想好了点这里</Button>
+                  {queue.length > 1 && <Button onClick={skip}>跳过</Button>}
                 </div>
               )}
             </div>
