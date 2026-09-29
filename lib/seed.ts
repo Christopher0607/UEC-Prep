@@ -57,12 +57,37 @@ export const SEED_PAPERS: {
   score: number;
   total: number;
   takenAt: string;
+  minutesTaken?: number;
   minutesAllowed?: number;
   lostToConcept?: number;
   lostToMethod?: number;
   lostToCareless?: number;
   notes: string;
 }[] = [
+  {
+    subjectId: "economics", label: "2018 统考 试卷一（历届）", score: 26, total: 30,
+    takenAt: "2018-01-01", minutesTaken: 20, minutesAllowed: 60,
+    lostToConcept: 3, lostToMethod: 1,
+    notes: "历届真题自测，20 分钟做完。错 4 题（6、16、23、24），另有 Q9 是事后蓝笔补答、不算自己做出来的。四年里最高的一份 —— 但也要留意：这份的难度是否真的与其他三份相当，值得回头对一下。",
+  },
+  {
+    subjectId: "economics", label: "2019 统考 试卷一（历届）", score: 16, total: 30,
+    takenAt: "2019-01-01", minutesTaken: 20, minutesAllowed: 60,
+    lostToConcept: 10, lostToMethod: 1, lostToCareless: 3,
+    notes: "四年最低，而且错得很分散：微观／宏观分界（Q1、Q15 一份卷踩两次）、市场结构（Q10、Q11）、国际收支（Q28、Q29、Q30）都有。⚠️ 这一份最该整份重做，目标 24+。",
+  },
+  {
+    subjectId: "economics", label: "2020 统考 试卷一（历届）", score: 17, total: 30,
+    takenAt: "2020-01-01", minutesTaken: 15, minutesAllowed: 60,
+    lostToConcept: 10, lostToMethod: 1, lostToCareless: 2,
+    notes: "13 题错，其中 Q9、Q10、Q11、Q12 连续四题全在市场结构 —— 这一块是四年最大的失分区。Q12 官方答案与课本通则冲突，待问老师。",
+  },
+  {
+    subjectId: "economics", label: "2021 统考 试卷一（历届）", score: 23, total: 30,
+    takenAt: "2021-01-01", minutesTaken: 15, minutesAllowed: 60,
+    lostToConcept: 3, lostToMethod: 1, lostToCareless: 3,
+    notes: "明显回升，而且只用 15 分钟。错 7 题，另有 Q13 蓝笔补答。Q20 官方把公务员退休金算进 GNP，与「转移性支付不计入」冲突，待问老师。",
+  },
   {
     subjectId: "economics", label: "2026 预考 试卷一（选择）", score: 24, total: 30,
     takenAt: "2026-09-07", minutesAllowed: 60,
@@ -156,6 +181,46 @@ export const SEED_MISTAKES: {
   { subjectId: "business", question: "售价 8、变动成本 5、固定成本 15,000，要赚 3,000 净利的产量？", myWork: "15000÷(8−5)＝5000，选 B", stuckAt: "用了损益平衡点公式，漏了目标利润。(15,000+3,000)÷3 ＝ 6,000", cause: "method", source: "2026 预考 商业 卷一 Q30" },
   { subjectId: "business", question: "求速动比率", myWork: "520,000÷200,000＝2.6，选 C", stuckAt: "那是流动比率。速动要先减存货：(520,000−180,000)÷200,000 ＝ 1.70", cause: "method", source: "2026 预考 商业 卷一 Q32" },
   { subjectId: "business", question: "Sinar 面对的一种外部风险与一种内部风险，并说明对营运成本与利润的影响", myWork: "只写了「财务」「经济不行、通货膨胀」", stuckAt: "2%+2% 的题要写因果链，不能停在名词上。而且「原料采购不足」是采购／营运风险，不是财务风险", cause: "method", source: "2026 预考 商业 卷二 Q4(c)" },
+  { subjectId: "economics", question: "总收益与生产者剩余", myWork: "选了 A", stuckAt: "正解 B。TR=150×4=600 对了。生产者剩余是价格线与供给曲线之间的**三角形**：½×4×(150−50)=200，你按整块矩形算成 400。剩余永远是面积，不是收益。", cause: "method", source: "2018 统考 经济 卷一 Q6" },
+  { subjectId: "economics", question: "会计成本 vs 会计利润", myWork: "选了 （蓝笔补答 A）", stuckAt: "正解 A。你的算式 1,600×2×8 − 8,000 = 17,600 算的是**利润**。会计成本只数实际付出去的钱：营业费用 5,000 ＋ 杂费 3,000 ＝ RM8,000。题目问成本就不要算收入。", cause: "concept", source: "2018 统考 经济 卷一 Q9" },
+  { subjectId: "economics", question: "哪些纳入 GDP", myWork: "选了 C", stuckAt: "正解 B。GDP 看**地点**，只算发生在本国境内的生产。你多选了「本国企业在外国的投资」—— 那是 GNP（看国籍）才算的。", cause: "concept", source: "2018 统考 经济 卷一 Q16" },
+  { subjectId: "economics", question: "国家预算中的税收", myWork: "选了 C", stuckAt: "正解 A。公债是政府**借来的钱**，要还，不是实质收入；大道收费是使用者付费，不属于税收。正解是「税收具强制性」＋「公营事业收入是政府盈利」。", cause: "concept", source: "2018 统考 经济 卷一 Q23" },
+  { subjectId: "economics", question: "政府支出的扩张效果", myWork: "选了 A", stuckAt: "正解 D。公债利息支出是**转移性支出**，钱换手但没有新产出，不产生扩张效果。判准：这笔钱有没有换回新的商品或服务。", cause: "concept", source: "2018 统考 经济 卷一 Q24" },
+  { subjectId: "economics", question: "微观经济学研究什么", myWork: "选了 B", stuckAt: "正解 C。微观＝**选择与价格**；「就业与收入」是宏观。同一份卷第 15 题又栽在这个分界上。", cause: "concept", source: "2019 统考 经济 卷一 Q1" },
+  { subjectId: "economics", question: "均衡价格↓、交易量↑", myWork: "选了 B", stuckAt: "正解 D。只有**供给增加大于需求增加**才会同时压低价格、推高数量。这类题画两条线试一次，比背四句结论快。", cause: "method", source: "2019 统考 经济 卷一 Q3" },
+  { subjectId: "economics", question: "供给曲线右移的原因", myWork: "选了 D", stuckAt: "正解 B。供给曲线**移动**只看生产成本与政策：工资下跌、出口津贴。「鲜花价格下跌」是沿着曲线走 —— 移动 vs 沿线移动的经典陷阱。", cause: "concept", source: "2019 统考 经济 卷一 Q4" },
+  { subjectId: "economics", question: "劣等物品与正常物品", myWork: "选了 A", stuckAt: "正解 D。薪水 2,500→3,000 后 CD 买少了→**劣等物品**；随身碟买多了→正常物品。你答「替代品」是把两个物品之间的关系，误当成物品对**所得**的反应。", cause: "concept", source: "2019 统考 经济 卷一 Q5" },
+  { subjectId: "economics", question: "预算线由 AU 变 AG", myWork: "选了 A", stuckAt: "正解 D。Y 轴截距不动、只有 X 轴截距缩短 → 只有 **X 物品涨价**。所得改变会让整条线**平行**移动，两个截距一起动。", cause: "concept", source: "2019 统考 经济 卷一 Q7" },
+  { subjectId: "economics", question: "寡占与垄断性竞争的共同点", myWork: "选了 D", stuckAt: "正解 B。垄断性竞争长期**只有正常利润**，不可能「长期都享超额利润」。两者真正的共同点是**非价格竞争**（广告、品牌）。", cause: "concept", source: "2019 统考 经济 卷一 Q10" },
+  { subjectId: "economics", question: "垄断性竞争的定价能力来源", myWork: "选了 D", stuckAt: "正解 C。来自**产品异质性**。「政府法令造成进入障碍」是**垄断**的特征，不是垄断性竞争。", cause: "concept", source: "2019 统考 经济 卷一 Q11" },
+  { subjectId: "economics", question: "公共财交给民间提供", myWork: "选了 B", stuckAt: "正解 C。公共财有正外部性，民间只按**私人利益**决定产量，一定**低于社会最适数量**。这正是政府要介入的理由。", cause: "concept", source: "2019 统考 经济 卷一 Q12" },
+  { subjectId: "economics", question: "与利率相关的功能", myWork: "选了 D", stuckAt: "正解 B。Ⅲ「**只**来自个人或家庭的储蓄」有个「只」字就必错（企业、政府也储蓄）。含 Ⅲ 的选项一律划掉。", cause: "careless", source: "2019 统考 经济 卷一 Q13" },
+  { subjectId: "economics", question: "宏观经济学关注什么", myWork: "选了 B", stuckAt: "正解 A。「市场的制度」「物品的价格」都是微观题材。跟第 1 题同一个坑，一份卷踩两次。", cause: "concept", source: "2019 统考 经济 卷一 Q15" },
+  { subjectId: "economics", question: "转移性 vs 非转移性支出", myWork: "选了 C", stuckAt: "正解 B。非转移性支出增加会**直接进 GDP**；转移性支出减少**本来就不计入**。一增一「不算」，净效果是增加。", cause: "concept", source: "2019 统考 经济 卷一 Q18" },
+  { subjectId: "economics", question: "汇率上涨的影响", myWork: "选了 A", stuckAt: "正解 C。本币升值→出口变贵、进口变便宜→净出口↓→**GDP 减少、贸易收支恶化**。你选的 A（增加＋改善）方向整个反了。", cause: "careless", source: "2019 统考 经济 卷一 Q28" },
+  { subjectId: "economics", question: "经常账项包含哪些", myWork: "选了 A", stuckAt: "正解 C。经常账＝商品＋服务＋**所得（投资收益）**＋经常转移。你漏了投资收益；直接投资属于金融账。", cause: "concept", source: "2019 统考 经济 卷一 Q29" },
+  { subjectId: "economics", question: "净出口增加的原因", myWork: "选了 C", stuckAt: "正解 D。本国货币升值只会让净出口**减少**。贸易伙伴国物价上涨→我们的货相对便宜→出口增加。又是方向题。", cause: "careless", source: "2019 统考 经济 卷一 Q30" },
+  { subjectId: "economics", question: "供给的价格弹性", myWork: "选了 D", stuckAt: "正解 A。「短期内**无法**提高供应」＝数量完全不动＝**完全无弹性（Es＝0）**。「缺乏弹性」是还能动一点点。题目用绝对字眼就选极端答案。", cause: "concept", source: "2020 统考 经济 卷一 Q6" },
+  { subjectId: "economics", question: "具垄断能力时会发生什么", myWork: "选了 A", stuckAt: "正解 D。你漏了「会出现**无谓损失**」。垄断限制产量、抬高价格，必然产生无谓损失；社会福利**不会**最大化。", cause: "concept", source: "2020 统考 经济 卷一 Q9" },
+  { subjectId: "economics", question: "为什么是价格接受者", myWork: "选了 C", stuckAt: "正解 D。因为**个别厂商产量只占市场极小比例**。「用不同推销方式竞争」是垄断性竞争的特征。", cause: "concept", source: "2020 统考 经济 卷一 Q10" },
+  { subjectId: "economics", question: "长期均衡：不再进出市场的点", myWork: "选了 B", stuckAt: "正解 A。不再进出＝经济利润为零＝**AR（需求线）与 AC 相切**那一点。看图要找**相切点**，不是 MR＝MC 的产量点。", cause: "concept", source: "2020 统考 经济 卷一 Q11" },
+  { subjectId: "economics", question: "MR 大于 MC 时【存疑】", myWork: "选了 A", stuckAt: "正解 C。⚠️ 官方答案 C「应减少产量」与标准理论（MR>MC 应**增加**产量）相反，四个选项里也没有「增加产量」。**这题去问老师**。", cause: "concept", source: "2020 统考 经济 卷一 Q12" },
+  { subjectId: "economics", question: "正面外部效果的对策", myWork: "选了 C", stuckAt: "正解 B。正外部性→**补贴生产者**，把私人边际利益拉到社会边际利益。「免地税 1 年」不是课本给的标准工具。", cause: "concept", source: "2020 统考 经济 卷一 Q13" },
+  { subjectId: "economics", question: "负面外部效果（生产上）", myWork: "选了 C", stuckAt: "正解 B。题目说的是**生产**上的负外部性→谈**成本**：私人边际成本**小于**社会边际成本。你选到了「利益」那一组。", cause: "concept", source: "2020 统考 经济 卷一 Q14" },
+  { subjectId: "economics", question: "国民所得的概念", myWork: "选了 B", stuckAt: "正解 A。「消费＝可支配所得−储蓄」是恒等式，永远成立。你选的 B「总合支出的变动无法影响总所得」直接和**乘数原理**打架。", cause: "concept", source: "2020 统考 经济 卷一 Q16" },
+  { subjectId: "economics", question: "名目 GDP 换算", myWork: "选了 A", stuckAt: "正解 D。名目＝实质×平减指数÷100＝20×140÷100＝**28 亿**。你选 7 亿是乘除做反。记法：平减指数>100，名目**一定大于**实质。", cause: "method", source: "2020 统考 经济 卷一 Q18" },
+  { subjectId: "economics", question: "货币的功能", myWork: "选了 A", stuckAt: "正解 C。计价、衡量价值、储存都是功能，你漏了一项；「接受」不是功能。四大功能整理成一句口诀。", cause: "careless", source: "2020 统考 经济 卷一 Q20" },
+  { subjectId: "economics", question: "投资如何提高国家所得", myWork: "选了 B→A", stuckAt: "正解 C。Ⅳ「投资不会影响政府支出」明显错，含 Ⅳ 的先划掉，剩 A 和 C 只差一个 Ⅲ。你改过一次答案还是漏了 Ⅲ —— **先排除、再补齐**。", cause: "careless", source: "2020 统考 经济 卷一 Q22" },
+  { subjectId: "economics", question: "哪项政策能提高实质 GDP", myWork: "选了 A", stuckAt: "正解 C。出口补贴直接推高净出口（X−M），**当期**就进 GDP。教育拨款是长期人力资本；失业津贴、单亲援助都是转移性支出。", cause: "concept", source: "2020 统考 经济 卷一 Q26" },
+  { subjectId: "economics", question: "单方转移属于哪一项", myWork: "选了 B", stuckAt: "正解 A。单方转移（侨汇、援助、赠与）记在**经常账**里，叫**经常转移**。金融转移、资本转移属于另外的账户。", cause: "concept", source: "2020 统考 经济 卷一 Q30" },
+  { subjectId: "economics", question: "生产上的替代品", myWork: "选了 C", stuckAt: "正解 A。皮鞋涨价→厂商把皮革、人手转去做皮鞋→**皮包供给减少**（曲线左移）。C 讲的是皮鞋自己的需求，与题目问的皮包无关。", cause: "concept", source: "2021 统考 经济 卷一 Q6" },
+  { subjectId: "economics", question: "垄断性竞争的短期均衡", myWork: "选了 （蓝笔补答 D）", stuckAt: "正解 D。任何市场结构，追求利润最大化都在 **MR＝MC**。短期可以有超额利润，所以「利润为零」「只有正常利润」都错 —— 那是**长期**的结论。送分题。", cause: "concept", source: "2021 统考 经济 卷一 Q13" },
+  { subjectId: "economics", question: "消费函数与乘数", myWork: "选了 B", stuckAt: "正解 C。Y＝(200+50)÷(1−0.75)＝**1000**。0.75 是 MPC，MPS＝0.25；乘数＝1÷0.25＝**4**，不是 5。三个数字你都记成了另一半。", cause: "method", source: "2021 统考 经济 卷一 Q17" },
+  { subjectId: "economics", question: "哪些计入 GNP【存疑】", myWork: "选了 B", stuckAt: "正解 A。GNP 看**国籍**：在新加坡工作的大马公民要算。⚠️ 但官方把「公务员退休金」也算进去，与「转移性支付不计入」的通则冲突，**去问老师**。", cause: "concept", source: "2021 统考 经济 卷一 Q20" },
+  { subjectId: "economics", question: "让所得循环流量增加的项目", myWork: "选了 A", stuckAt: "正解 C。注入项＝投资＋政府支出＋**出口**；储蓄是漏出项。你只选了投资和消费，漏掉出口。注入／漏出这张图默画一次。", cause: "careless", source: "2021 统考 经济 卷一 Q21" },
+  { subjectId: "economics", question: "货币作为借贷对象", myWork: "选了 B", stuckAt: "正解 A。「可避免偿还时发生争议」＝作为债务清偿的标准＝**延期支付**。计价单位是拿来**标价**的，两者容易混。", cause: "concept", source: "2021 统考 经济 卷一 Q23" },
+  { subjectId: "economics", question: "哪家企业在进行全球化生产", myWork: "选了 C", stuckAt: "正解 B。全球化**生产**看生产链是否跨国：零件来自台韩、在中国组装。C 是在本国生产再出口，属于全球化**销售**。看清问的是生产还是销售。", cause: "careless", source: "2021 统考 经济 卷一 Q26" },
+  { subjectId: "economics", question: "国际收支失衡的调整政策", myWork: "选了 D", stuckAt: "正解 C。贸易赤字要用汇率、关税、利率去压进口。**扩张政策**会让所得上升、进口更多，赤字反而更大 —— 你多选了它。", cause: "careless", source: "2021 统考 经济 卷一 Q30" },
   { subjectId: "economics", question: "垄断厂商图：MR 与 MC 交于 Q=5（千），求价格 P 与总固定成本 TFC", myWork: "选了 A。TFC 算对了，但 P 取了 20", stuckAt: "20 是 AVC 的最低点，不是 Q=5 处 AR 的高度。Q=5 处 AR=33、AC=37、AVC=25 → P=33，TFC=(37−25)×5000=60,000 → B", cause: "careless", source: "2026 预考 经济 卷一 Q12" },
   { subjectId: "economics", question: "承上题，求该厂商的利润／亏损", myWork: "选了 C", stuckAt: "Q12 读错 P 的连锁反应。π=(P−AC)×Q=(33−37)×5,000=−20,000 → D", cause: "careless", source: "2026 预考 经济 卷一 Q13" },
   { subjectId: "economics", question: "哪些因素会使总合支出 AE 曲线向下移？", myWork: "选了 B（I 投资增加、III 出口增加）", stuckAt: "方向反了。向下移＝II 政府支出减少 ＋ IV 进口增加 → C。AE 上移：投资↑、政府支出↑、出口↑、进口↓", cause: "careless", source: "2026 预考 经济 卷一 Q19" },
@@ -333,6 +398,7 @@ export function seedPapers(): number {
       label: p.label,
       score: p.score,
       total: p.total,
+      minutesTaken: p.minutesTaken,
       minutesAllowed: p.minutesAllowed,
       lostToConcept: p.lostToConcept,
       lostToMethod: p.lostToMethod,

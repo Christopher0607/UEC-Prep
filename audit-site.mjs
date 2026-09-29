@@ -46,7 +46,7 @@ ok("空数据时显示载入面板", await page.getByText("先把内容装进来
 await page.getByRole("button", { name: "一键载入全部" }).click();
 await page.waitForTimeout(1200);
 const got = await panel("内容已装好").innerText();
-ok("三项都满格", /450 \/ 450/.test(got) && /313 \/ 313/.test(got) && /48 \/ 48/.test(got) && /9 \/ 9/.test(got) && /1 \/ 1/.test(got), got.match(/\d+ \/ \d+/g)?.join(" "));
+ok("三项都满格", /450 \/ 450/.test(got) && /313 \/ 313/.test(got) && /88 \/ 88/.test(got) && /13 \/ 13/.test(got) && /1 \/ 1/.test(got), got.match(/\d+ \/ \d+/g)?.join(" "));
 await page.getByRole("button", { name: "补载入缺的" }).click();
 await page.waitForTimeout(600);
 ok("重复点不重复加", await page.getByText("都已经在里面了，没有要补的。").isVisible());
@@ -163,7 +163,8 @@ for (const sub of ["english","chinese","accounting","economics","business","math
   ok(`  ${sub} 有卷面结构`, t.includes("%"), "");
 }
 const pg = await page.locator("body").innerText();
-ok("九份预考成绩都在", (pg.match(/2026 预考 /g) ?? []).length >= 9, `${(pg.match(/2026 预考 /g) ?? []).length} 条`);
+ok("四份历届 + 九份预考都在", (pg.match(/统考 试卷/g) ?? []).length === 4 && (pg.match(/2026 预考/g) ?? []).length >= 7,
+  `历届 ${(pg.match(/统考 试卷/g) ?? []).length} · 预考 ${(pg.match(/2026 预考/g) ?? []).length}`);
 ok("成绩带失分归因", /概念 −7/.test(pg) && /粗心 −12/.test(pg));
 ok("成绩带来源说明", pg.includes("官方 18/40，与逐题批改"));
 ok("估分那条有警告", pg.includes("⚠️ 估分，不是实测"));
