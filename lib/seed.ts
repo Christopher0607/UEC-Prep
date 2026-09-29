@@ -18,7 +18,7 @@ import {
   MATH_SYLLABUS_SEED,
 } from "./syllabi";
 import { newId, update } from "./store";
-import type { Card, Mistake, MistakeCause, SubjectId, Topic } from "./types";
+import type { Card, Mistake, MistakeCause, PaperAttempt, SubjectId, Topic } from "./types";
 
 export const SYLLABI: { subjectId: SubjectId; label: string; data: { section: string; title: string }[] }[] = [
   { subjectId: "english", label: "英文", data: ENGLISH_SYLLABUS_SEED },
@@ -31,6 +31,80 @@ export const SYLLABI: { subjectId: SubjectId; label: string; data: { section: st
 ];
 
 export const TOTAL_TOPICS = SYLLABI.reduce((n, s) => n + s.data.length, 0);
+
+/**
+ * 2026 校内预考 · 已有分数的九份卷子。
+ *
+ * 分数来源分两种，notes 里都写明了：
+ *   「官方」＝ 老师派卷后的实际分数（2026-09-21 派卷）
+ *   「批改」＝ 答卷还没派回，这是逐题对答案批出来的
+ * 高数 Paper 1 两者都有，且完全一致（9/20 ＝ 18/40）—— 这是「批改」可信的依据。
+ *
+ * 失分归因（概念／方法／粗心）只在逐题批改撑得住的卷子上填。
+ * 华文卷二、经济两卷的作答写在答题纸上、没留痕迹，归因留空，不瞎猜。
+ */
+export const SEED_PAPERS: {
+  subjectId: SubjectId;
+  label: string;
+  score: number;
+  total: number;
+  takenAt: string;
+  minutesAllowed?: number;
+  lostToConcept?: number;
+  lostToMethod?: number;
+  lostToCareless?: number;
+  notes: string;
+}[] = [
+  {
+    subjectId: "economics", label: "2026 预考 试卷一（选择）", score: 24, total: 30,
+    takenAt: "2026-09-07", minutesAllowed: 60,
+    notes: "官方。逐题批改当时没存档 —— 归因待补。",
+  },
+  {
+    subjectId: "economics", label: "2026 预考 试卷二（作答）", score: 42, total: 70,
+    takenAt: "2026-09-07", minutesAllowed: 120,
+    notes: "官方。丢的 28 分里，绘图题占 19 分（正外部性 3＋预算线旋转 6＋最低薪金 5＋货币市场 5）—— 全科最集中、最可练的一块。",
+  },
+  {
+    subjectId: "english", label: "2026 预考 Paper 2", score: 25, total: 40,
+    takenAt: "2026-09-08", minutesAllowed: 80,
+    notes: "官方 62.5%。Reading 三部分 21/30，Language Use 两部分只有 6–7/20。逐题数出 27–28 题对（共 50 题）却得 25/40 —— 卷二不是每题 1 分，分值表待核。Paper 1（占英文一半）至今未拿回。",
+  },
+  {
+    subjectId: "advmath", label: "2026 预考 Paper 1（选择）", score: 18, total: 40,
+    takenAt: "2026-09-09", minutesAllowed: 60,
+    lostToConcept: 8, lostToMethod: 2, lostToCareless: 12,
+    notes: "官方 18/40，与逐题批改（9/20）完全一致。11 道错题里 6 道是「差最后一步」—— 光这一条救回来就是 14/20。问题不是某一章，是每一章都掉一两分。",
+  },
+  {
+    subjectId: "business", label: "2026 预考 试卷一（选择）", score: 30, total: 35,
+    takenAt: "2026-09-10", minutesAllowed: 60,
+    lostToConcept: 3, lostToMethod: 2,
+    notes: "批改（答卷未派回）。概念三题：CFR 不含保险、LLP 无人数上限、消费人协会不是政府机构。方法两题：目标利润产量、速动比率各用错公式。Q26 马斯洛存疑，要问老师。",
+  },
+  {
+    subjectId: "chinese", label: "2026 预考 试卷二（语文测验）", score: 13, total: 60,
+    takenAt: "2026-09-11", minutesAllowed: 105,
+    notes: "官方 21.7%，七科最低。作答写在答题纸上没留痕迹，无法逐题归因。但 60 分里 36 分（语文基础 8＋文学常识 10＋古诗文 18）是纯记忆或范围固定的 —— 这一科最有救。试卷一写作 40% 未拿回。",
+  },
+  {
+    subjectId: "accounting", label: "2026 预考 试卷一（选择）", score: 12, total: 20,
+    takenAt: "2026-09-17", minutesAllowed: 30,
+    lostToConcept: 7, lostToCareless: 1,
+    notes: "批改（答卷未派回）。八道错题里七道卡在英文术语，零道是算错 —— 同一个 gearing 概念，商业学用中文出现时答对了。Q15 是自相矛盾（四行全打勾却选了排除第 III 行的选项）。试卷二占 80%，未拿回。",
+  },
+  {
+    subjectId: "math", label: "2026 预考 试卷一（选择）", score: 32, total: 40,
+    takenAt: "2026-09-18", minutesAllowed: 60,
+    lostToConcept: 2, lostToMethod: 2, lostToCareless: 4,
+    notes: "批改：16/20 题对 ＝ 32/40。自标 Tembak 五题（Q3、8、9、17、19），蒙对两题 —— 真实掌握度是 15/20。Q18 算出切线斜率忘了取负倒数，是典型的「差最后一步」。",
+  },
+  {
+    subjectId: "math", label: "2026 预考 试卷二（作答·估分）", score: 31, total: 60,
+    takenAt: "2026-09-18", minutesAllowed: 120,
+    notes: "⚠️ 估分，不是实测 —— 按卷面草稿推的（Section A ≈14/20，Section B ≈17/40）。Section B 选了 Q6、Q9、Q10、Q11，各得 4、4、4、5。官方分数拿回来后要覆盖这一条。",
+  },
+];
 
 /** 预考错题 —— 七科逐题批改后，值得进错题本的那些。 */
 export const SEED_MISTAKES: {
@@ -169,10 +243,42 @@ export function seedMistakes(): number {
   return added;
 }
 
-/** 一键把三样全部载入。返回各自新增的条数。 */
-export function seedEverything(): { topics: number; cards: number; mistakes: number } {
+/** 载入预考成绩。按「科目 + 卷名」去重。 */
+export function seedPapers(): number {
+  let added = 0;
+  update((d) => {
+    const have = new Set(d.papers.map((p) => `${p.subjectId}|${p.label}`));
+    const fresh: PaperAttempt[] = SEED_PAPERS.filter(
+      (p) => !have.has(`${p.subjectId}|${p.label}`),
+    ).map((p) => ({
+      id: newId(),
+      subjectId: p.subjectId,
+      label: p.label,
+      score: p.score,
+      total: p.total,
+      minutesAllowed: p.minutesAllowed,
+      lostToConcept: p.lostToConcept,
+      lostToMethod: p.lostToMethod,
+      lostToCareless: p.lostToCareless,
+      notes: p.notes,
+      takenAt: p.takenAt,
+    }));
+    added = fresh.length;
+    return { ...d, papers: [...d.papers, ...fresh] };
+  });
+  return added;
+}
+
+/** 一键把四样全部载入。返回各自新增的条数。 */
+export function seedEverything(): {
+  topics: number;
+  cards: number;
+  mistakes: number;
+  papers: number;
+} {
   const topics = SYLLABI.reduce((n, s) => n + seedTopics(s.subjectId), 0);
   const cards = DECKS.reduce((n, deck) => n + seedDeck(deck.id), 0);
   const mistakes = seedMistakes();
-  return { topics, cards, mistakes };
+  const papers = seedPapers();
+  return { topics, cards, mistakes, papers };
 }

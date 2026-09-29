@@ -16,6 +16,7 @@ import { A1_THRESHOLD, SUBJECTS, subjectById } from "@/lib/exam";
 import type { Subject } from "@/lib/exam";
 import { PAPER_STRUCTURES } from "@/lib/syllabi";
 import { gradePrompt } from "@/lib/prompt";
+import { SEED_PAPERS, seedPapers } from "@/lib/seed";
 import { newId, update, useData } from "@/lib/store";
 import type { PaperAttempt, SubjectId } from "@/lib/types";
 
@@ -37,11 +38,25 @@ function num(v: string): number | undefined {
   return v.trim() === "" || Number.isNaN(n) ? undefined : n;
 }
 
+/** 失分归因里填了的那几项。没填就不显示 —— 空着比瞎猜好。 */
+function lost(a: PaperAttempt): [string, number, string][] {
+  return (
+    [
+      ["概念", a.lostToConcept, "border-danger/40 text-danger"],
+      ["方法", a.lostToMethod, "border-warn/40 text-warn"],
+      ["粗心", a.lostToCareless, "border-accent/40 text-accent"],
+    ] as [string, number | undefined, string][]
+  )
+    .filter((x): x is [string, number, string] => typeof x[1] === "number" && x[1] > 0)
+    .map(([l, n, tone]) => [l, n, tone]);
+}
+
 export default function PapersPage() {
   const data = useData();
   const [form, setForm] = useState(EMPTY);
   const [gradeSubject, setGradeSubject] = useState<SubjectId>("advmath");
   const [gradeLabel, setGradeLabel] = useState("");
+  const [seedMsg, setSeedMsg] = useState("");
 
   const bySubject = useMemo(() => {
     return SUBJECTS.map((s) => ({
@@ -204,10 +219,23 @@ export default function PapersPage() {
           </Field>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button variant="primary" onClick={add} disabled={!form.score.trim()}>
             记下来
           </Button>
+          <Button
+            onClick={() => {
+              const n = seedPapers();
+              setSeedMsg(
+                n
+                  ? `载入 ${n} 份预考成绩。`
+                  : "九份预考成绩都已经在里面了。",
+              );
+            }}
+          >
+            载入预考成绩（{SEED_PAPERS.length}）
+          </Button>
+          {seedMsg && <span className="text-sm text-ok">{seedMsg}</span>}
         </div>
       </Panel>
 
@@ -251,7 +279,9 @@ export default function PapersPage() {
       <Panel title="成绩走势">
         <ClientOnly>
           {bySubject.length === 0 ? (
-            <Empty>还没有真题记录。诊断期的任务就是给每一科刷出第一个真实分数。</Empty>
+            <Empty>
+              还没有真题记录。2026 预考已经批出九份分数 —— 点下面「载入预考成绩」就进来了。
+            </Empty>
           ) : (
             <div className="space-y-5">
               {bySubject.map(({ subject, attempts }) => {
@@ -277,8 +307,12 @@ export default function PapersPage() {
                         const overtime =
                           a.minutesTaken && a.minutesAllowed && a.minutesTaken > a.minutesAllowed;
                         return (
-                          <li key={a.id} className="group flex items-center gap-3 text-sm">
-                            <span className="w-32 shrink-0 truncate text-muted-foreground">
+                          <li key={a.id} className="group text-sm">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="w-32 shrink-0 truncate text-muted-foreground"
+                              title={a.label}
+                            >
                               {a.label}
                             </span>
                             <div className="relative h-5 flex-1 overflow-hidden rounded bg-surface-2">
@@ -302,6 +336,29 @@ export default function PapersPage() {
                             >
                               删除
                             </button>
+                          </div>
+                          {/* 成绩本身只是一个数字；这一行才说明它是怎么来的、丢在哪。 */}
+                          {(a.notes || lost(a).length > 0) && (
+                            <div className="ml-0 mt-1 space-y-1 sm:ml-[8.75rem]">
+                              {lost(a).length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {lost(a).map(([label, n, tone]) => (
+                                    <span
+                                      key={label}
+                                      className={`rounded border px-1.5 py-0.5 text-xs tnum ${tone}`}
+                                    >
+                                      {label} −{n}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              {a.notes && (
+                                <p className="text-xs leading-relaxed text-muted-foreground">
+                                  {a.notes}
+                                </p>
+                              )}
+                            </div>
+                          )}
                           </li>
                         );
                       })}
