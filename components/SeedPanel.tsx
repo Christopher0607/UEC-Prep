@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button, ClientOnly, Panel } from "@/components/ui";
 import { DECKS, TOTAL_CARDS } from "@/lib/decks";
-import { SEED_MISTAKES, SEED_PAPERS, TOTAL_TOPICS, seedEverything } from "@/lib/seed";
+import { SEED_BANK, SEED_MISTAKES, SEED_PAPERS, TOTAL_TOPICS, seedEverything } from "@/lib/seed";
 import { useData } from "@/lib/store";
 
 /**
@@ -23,6 +23,7 @@ export default function SeedPanel() {
     cards: number;
     mistakes: number;
     papers: number;
+    bank: number;
   } | null>(null);
 
   const rows: [string, number, number, string][] = [
@@ -30,6 +31,7 @@ export default function SeedPanel() {
     ["背诵卡", data.cards.length, TOTAL_CARDS, `${DECKS.length} 个卡组`],
     ["预考错题", data.mistakes.length, SEED_MISTAKES.length, "逐题批改"],
     ["预考成绩", data.papers.length, SEED_PAPERS.length, "九份卷子"],
+    ["题库索引", data.bank.length, SEED_BANK.length, "逐题章节"],
   ];
   const missing = rows.some(([, have, total]) => have < total);
 
@@ -39,11 +41,11 @@ export default function SeedPanel() {
         title={missing ? "先把内容装进来" : "内容已装好"}
         subtitle={
           missing
-            ? "这一个月积累的考点、背诵卡、预考错题和预考成绩都写进代码里了，点一下就全进去。重复点不会重复加。"
+            ? "这一个月积累的考点、背诵卡、预考错题、预考成绩和题库索引都写进代码里了，点一下就全进去。重复点不会重复加。"
             : "预制内容都在里面了。以后往卡组里加了东西，回来点一次「补载入缺的」就只会进新的。"
         }
       >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {rows.map(([label, have, total, note]) => (
             <div key={label} className="rounded-xl border p-3">
               <p className="tnum text-2xl font-bold">
@@ -62,9 +64,9 @@ export default function SeedPanel() {
           </Button>
           {result && (
             <span className="text-sm text-ok">
-              {result.topics + result.cards + result.mistakes + result.papers === 0
+              {result.topics + result.cards + result.mistakes + result.papers + result.bank === 0
                 ? "都已经在里面了，没有要补的。"
-                : `新增：考点 ${result.topics} · 卡 ${result.cards} · 错题 ${result.mistakes} · 成绩 ${result.papers}`}
+                : `新增：考点 ${result.topics} · 卡 ${result.cards} · 错题 ${result.mistakes} · 成绩 ${result.papers} · 题库 ${result.bank}`}
             </span>
           )}
         </div>

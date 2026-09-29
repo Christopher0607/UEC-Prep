@@ -18,7 +18,15 @@ import {
   MATH_SYLLABUS_SEED,
 } from "./syllabi";
 import { newId, update } from "./store";
-import type { Card, Mistake, MistakeCause, PaperAttempt, SubjectId, Topic } from "./types";
+import type {
+  Card,
+  Mistake,
+  MistakeCause,
+  PaperAttempt,
+  PastPaper,
+  SubjectId,
+  Topic,
+} from "./types";
 
 export const SYLLABI: { subjectId: SubjectId; label: string; data: { section: string; title: string }[] }[] = [
   { subjectId: "english", label: "英文", data: ENGLISH_SYLLABUS_SEED },
@@ -58,7 +66,8 @@ export const SEED_PAPERS: {
   {
     subjectId: "economics", label: "2026 预考 试卷一（选择）", score: 24, total: 30,
     takenAt: "2026-09-07", minutesAllowed: 60,
-    notes: "官方。逐题批改当时没存档 —— 归因待补。",
+    lostToConcept: 1, lostToMethod: 1, lostToCareless: 3,
+    notes: "官方 24/30，与当天逐题批改完全一致（第二次对上官方，第一次是高数 P1）。五道错题：12、13、19、24、29 —— 其中三道错在看图读数与判方向，是一个习惯问题，不是四个知识漏洞。Q28 题目本身有毛病（问「政策组合」但四个选项都是单一政策），不算错。⚠️ 下册第9章汇率、第10章国际收支不在预考范围但在统考范围，这 80% 会高估真实水平。",
   },
   {
     subjectId: "economics", label: "2026 预考 试卷二（作答）", score: 42, total: 70,
@@ -147,6 +156,11 @@ export const SEED_MISTAKES: {
   { subjectId: "business", question: "售价 8、变动成本 5、固定成本 15,000，要赚 3,000 净利的产量？", myWork: "15000÷(8−5)＝5000，选 B", stuckAt: "用了损益平衡点公式，漏了目标利润。(15,000+3,000)÷3 ＝ 6,000", cause: "method", source: "2026 预考 商业 卷一 Q30" },
   { subjectId: "business", question: "求速动比率", myWork: "520,000÷200,000＝2.6，选 C", stuckAt: "那是流动比率。速动要先减存货：(520,000−180,000)÷200,000 ＝ 1.70", cause: "method", source: "2026 预考 商业 卷一 Q32" },
   { subjectId: "business", question: "Sinar 面对的一种外部风险与一种内部风险，并说明对营运成本与利润的影响", myWork: "只写了「财务」「经济不行、通货膨胀」", stuckAt: "2%+2% 的题要写因果链，不能停在名词上。而且「原料采购不足」是采购／营运风险，不是财务风险", cause: "method", source: "2026 预考 商业 卷二 Q4(c)" },
+  { subjectId: "economics", question: "垄断厂商图：MR 与 MC 交于 Q=5（千），求价格 P 与总固定成本 TFC", myWork: "选了 A。TFC 算对了，但 P 取了 20", stuckAt: "20 是 AVC 的最低点，不是 Q=5 处 AR 的高度。Q=5 处 AR=33、AC=37、AVC=25 → P=33，TFC=(37−25)×5000=60,000 → B", cause: "careless", source: "2026 预考 经济 卷一 Q12" },
+  { subjectId: "economics", question: "承上题，求该厂商的利润／亏损", myWork: "选了 C", stuckAt: "Q12 读错 P 的连锁反应。π=(P−AC)×Q=(33−37)×5,000=−20,000 → D", cause: "careless", source: "2026 预考 经济 卷一 Q13" },
+  { subjectId: "economics", question: "哪些因素会使总合支出 AE 曲线向下移？", myWork: "选了 B（I 投资增加、III 出口增加）", stuckAt: "方向反了。向下移＝II 政府支出减少 ＋ IV 进口增加 → C。AE 上移：投资↑、政府支出↑、出口↑、进口↓", cause: "careless", source: "2026 预考 经济 卷一 Q19" },
+  { subjectId: "economics", question: "M=2.6 兆、V=2.2、名目 GDP=2.3 兆、实质 GDP=1.8 兆，求物价水平 P", myWork: "选了 C（2.49）＝ 5.72÷2.3，用了名目 GDP", stuckAt: "MV=PY 里的 Y 永远是实质产出。名目 GDP 本身就等于 P×Y，拿它当 Y 等于算了两次物价。5.72÷1.8=3.18 → B", cause: "method", source: "2026 预考 经济 卷一 Q24" },
+  { subjectId: "economics", question: "政府迟迟未能确认问题的性质 —— 这是哪一种政策落差？", myWork: "选了 A（决策落差）", stuckAt: "还在吵「到底出没出问题」＝认知落差；已承认有问题、在吵「用哪招」＝决策落差 → C", cause: "concept", source: "2026 预考 经济 卷一 Q29" },
   { subjectId: "economics", question: "慈悯援助金（STR）本身是否直接计入 GDP？", myWork: "写了「Yes, Expenses」", stuckAt: "转移性支付不计入 GDP —— 政府没换到任何当期生产的商品或服务。政府支出 G 也不含补助金", cause: "concept", source: "2026 预考 经济 卷二 Q6(a)" },
   { subjectId: "economics", question: "绘图说明最低薪金制对劳动市场的变化（5%）", myWork: "卷面标「不会」，空白", stuckAt: "Wmin 画在均衡 We 之上（价格下限），Ls>Ld，Ls−Ld ＝ 劳动过剩 ＝ 失业，要在图上标出来", cause: "concept", source: "2026 预考 经济 卷二 Q5(a)" },
   { subjectId: "chinese", question: "下列加点词的汉语拼音，哪一项完全正确？", myWork: "选了 A", stuckAt: "广袤无垠的「垠」读 yín 不是 hén。正解 B（蹊跷 qī／伛偻 yǔ／断壁残垣 yuán 三个全对）", cause: "concept", source: "2026 预考 华文 卷二 基础 Q1" },
@@ -216,6 +230,69 @@ export function seedDeck(deckId: string): number {
   return added;
 }
 
+/**
+ * 历年考题题库 —— 目前只有 2026 预考经济卷一这一份，30 题的逐题章节索引。
+ *
+ * 这是 2026-09-07 就批出来的东西：当时只给了一块「自己贴进去」的文本，
+ * 结果一直没人贴，题库空到现在。章节字符串与考点表**完全一致**
+ * （含「分类集 第X章」后缀），所以频率统计会自动跟覆盖表对上。
+ *
+ * ⚠️ 这份卷的范围不含下册第9章汇率、第10章国际收支 ——
+ * 频率表上那两章的零是「范围外」，不是「不考」。
+ */
+export const SEED_BANK: {
+  subjectId: SubjectId;
+  year: string;
+  paper: string;
+  note: string;
+  questions: {
+    number: string;
+    type: "mcq";
+    marks: number;
+    chapter: string;
+    attempted: boolean;
+    correct: boolean;
+    note?: string;
+  }[];
+}[] = [
+  {
+    subjectId: "economics", year: "2026", paper: "预考 试卷一",
+    note: "预考范围不含下册第9章汇率、第10章国际收支 —— 频率表上那两章的零是范围外，不是不考。上册 15 题、下册 15 题精确对半，且照课本章序排列。",
+    questions: [
+      { number: "1", type: "mcq" as const, marks: 1, chapter: "上册 · 第1章 绪论", attempted: true, correct: true },
+      { number: "2", type: "mcq" as const, marks: 1, chapter: "上册 · 第1章 绪论", attempted: true, correct: true },
+      { number: "3", type: "mcq" as const, marks: 1, chapter: "上册 · 第2章 需求与供给", attempted: true, correct: true },
+      { number: "4", type: "mcq" as const, marks: 1, chapter: "上册 · 第3章 弹性理论", attempted: true, correct: true },
+      { number: "5", type: "mcq" as const, marks: 1, chapter: "上册 · 第3章 弹性理论", attempted: true, correct: true },
+      { number: "6", type: "mcq" as const, marks: 1, chapter: "上册 · 第4章 市场效率与政府干预", attempted: true, correct: true },
+      { number: "7", type: "mcq" as const, marks: 1, chapter: "上册 · 第4章 市场效率与政府干预", attempted: true, correct: true },
+      { number: "8", type: "mcq" as const, marks: 1, chapter: "上册 · 第5章 消费行为的研究", attempted: true, correct: true },
+      { number: "9", type: "mcq" as const, marks: 1, chapter: "上册 · 第6章 生产要素市场（分类集 第11章）", attempted: true, correct: true },
+      { number: "10", type: "mcq" as const, marks: 1, chapter: "上册 · 第7章 生产与成本（分类集 第6章）", attempted: true, correct: true, note: "标「吃力」但答对。纯规则题：MC 必定穿过 AVC 与 AC 的最低点" },
+      { number: "11", type: "mcq" as const, marks: 1, chapter: "上册 · 第8章 完全竞争市场（分类集 第7章）", attempted: true, correct: true },
+      { number: "12", type: "mcq" as const, marks: 1, chapter: "上册 · 第9章 垄断市场（分类集 第8章）", attempted: true, correct: false, note: "读图：P 取了 AVC 最低点 20，实际 Q=5 处 AR＝33" },
+      { number: "13", type: "mcq" as const, marks: 1, chapter: "上册 · 第9章 垄断市场（分类集 第8章）", attempted: true, correct: false, note: "Q12 的连锁反应" },
+      { number: "14", type: "mcq" as const, marks: 1, chapter: "上册 · 第10章 不完全竞争市场（分类集 第9章）", attempted: true, correct: true },
+      { number: "15", type: "mcq" as const, marks: 1, chapter: "上册 · 第11章 市场失灵（分类集 第10章）", attempted: true, correct: true, note: "标「猜的」但蒙对。公共财只看排他性与竞争性" },
+      { number: "16", type: "mcq" as const, marks: 1, chapter: "下册 · 第1章 国家生产总值", attempted: true, correct: true },
+      { number: "17", type: "mcq" as const, marks: 1, chapter: "下册 · 第1章 国家生产总值", attempted: true, correct: true },
+      { number: "18", type: "mcq" as const, marks: 1, chapter: "下册 · 第2章 国民所得水准的决定", attempted: true, correct: true },
+      { number: "19", type: "mcq" as const, marks: 1, chapter: "下册 · 第2章 国民所得水准的决定", attempted: true, correct: false, note: "读图判方向：AE 上移／下移搞反" },
+      { number: "20", type: "mcq" as const, marks: 1, chapter: "下册 · 第2章 国民所得水准的决定", attempted: true, correct: true },
+      { number: "21", type: "mcq" as const, marks: 1, chapter: "下册 · 第3章 经济发展与循环", attempted: true, correct: true },
+      { number: "22", type: "mcq" as const, marks: 1, chapter: "下册 · 第4章 失业与通货膨胀", attempted: true, correct: true },
+      { number: "23", type: "mcq" as const, marks: 1, chapter: "下册 · 第4章 失业与通货膨胀", attempted: true, correct: true },
+      { number: "24", type: "mcq" as const, marks: 1, chapter: "下册 · 第5章 货币与存款货币的创造", attempted: true, correct: false, note: "MV＝PY 的 Y 用了名目 GDP，应用实质 GDP" },
+      { number: "25", type: "mcq" as const, marks: 1, chapter: "下册 · 第5章 货币与存款货币的创造", attempted: true, correct: true },
+      { number: "26", type: "mcq" as const, marks: 1, chapter: "下册 · 第6章 中央银行与货币政策", attempted: true, correct: true },
+      { number: "27", type: "mcq" as const, marks: 1, chapter: "下册 · 第6章 中央银行与货币政策", attempted: true, correct: true },
+      { number: "28", type: "mcq" as const, marks: 1, chapter: "下册 · 第7章 财政政策", attempted: true, correct: true, note: "⚠️ 题目本身有毛病：问「政策组合」但四个选项都是单一政策。不算错，待问老师" },
+      { number: "29", type: "mcq" as const, marks: 1, chapter: "下册 · 第7章 财政政策", attempted: true, correct: false, note: "认知落差 vs 决策落差" },
+      { number: "30", type: "mcq" as const, marks: 1, chapter: "下册 · 第8章 国际贸易", attempted: true, correct: true },
+    ],
+  },
+];
+
 /** 载入预考错题。按「来源 + 题目」去重。 */
 export function seedMistakes(): number {
   let added = 0;
@@ -269,16 +346,42 @@ export function seedPapers(): number {
   return added;
 }
 
-/** 一键把四样全部载入。返回各自新增的条数。 */
+/** 载入题库里的历年／预考卷索引。按「科目 + 年份 + 卷号」去重。 */
+export function seedBank(): number {
+  let added = 0;
+  update((d) => {
+    const have = new Set(d.bank.map((b) => `${b.subjectId}|${b.year}|${b.paper}`));
+    const now = nowISO();
+    const fresh: PastPaper[] = SEED_BANK.filter(
+      (b) => !have.has(`${b.subjectId}|${b.year}|${b.paper}`),
+    ).map((b) => ({
+      id: newId(),
+      subjectId: b.subjectId,
+      year: b.year,
+      paper: b.paper,
+      note: b.note,
+      pageIds: [],
+      questions: b.questions.map((q) => ({ id: newId(), ...q })),
+      createdAt: now,
+    }));
+    added = fresh.length;
+    return { ...d, bank: [...d.bank, ...fresh] };
+  });
+  return added;
+}
+
+/** 一键把五样全部载入。返回各自新增的条数。 */
 export function seedEverything(): {
   topics: number;
   cards: number;
   mistakes: number;
   papers: number;
+  bank: number;
 } {
   const topics = SYLLABI.reduce((n, s) => n + seedTopics(s.subjectId), 0);
   const cards = DECKS.reduce((n, deck) => n + seedDeck(deck.id), 0);
   const mistakes = seedMistakes();
   const papers = seedPapers();
-  return { topics, cards, mistakes, papers };
+  const bank = seedBank();
+  return { topics, cards, mistakes, papers, bank };
 }

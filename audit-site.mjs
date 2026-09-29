@@ -46,7 +46,7 @@ ok("空数据时显示载入面板", await page.getByText("先把内容装进来
 await page.getByRole("button", { name: "一键载入全部" }).click();
 await page.waitForTimeout(1200);
 const got = await panel("内容已装好").innerText();
-ok("三项都满格", /450 \/ 450/.test(got) && /313 \/ 313/.test(got) && /43 \/ 43/.test(got) && /9 \/ 9/.test(got), got.match(/\d+ \/ \d+/g)?.join(" "));
+ok("三项都满格", /450 \/ 450/.test(got) && /313 \/ 313/.test(got) && /48 \/ 48/.test(got) && /9 \/ 9/.test(got) && /1 \/ 1/.test(got), got.match(/\d+ \/ \d+/g)?.join(" "));
 await page.getByRole("button", { name: "补载入缺的" }).click();
 await page.waitForTimeout(600);
 ok("重复点不重复加", await page.getByText("都已经在里面了，没有要补的。").isVisible());
@@ -167,6 +167,16 @@ ok("九份预考成绩都在", (pg.match(/2026 预考 /g) ?? []).length >= 9, `$
 ok("成绩带失分归因", /概念 −7/.test(pg) && /粗心 −12/.test(pg));
 ok("成绩带来源说明", pg.includes("官方 18/40，与逐题批改"));
 ok("估分那条有警告", pg.includes("⚠️ 估分，不是实测"));
+ok("经济卷一有失分归因", /粗心 −3/.test(pg) && pg.includes("第二次对上官方"));
+
+console.log("\n── G2. 题库：经济卷一 30 题索引 ──");
+await go("/bank/");
+await page.waitForTimeout(500);
+const bk = await page.locator("body").innerText();
+ok("卷子已载入", bk.includes("2026") && bk.includes("预考 试卷一"), bk.match(/\d+ 题 · \d+ 页/)?.[0] ?? "");
+ok("30 题全在", /30 题/.test(bk));
+ok("范围缺口警告在卷子旁边", bk.includes("预考范围不含下册第9章汇率"));
+ok("出题频率算出来了", /\d+ 分/.test(bk) && bk.includes("上册 · 第9章 垄断市场"));
 
 console.log("\n── H. 备份：导出→清空→导入 ──");
 await go("/data/");

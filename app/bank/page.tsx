@@ -15,6 +15,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { QUESTION_TYPES, chapterFrequency, paperLabel, parseQuestions, typeName } from "@/lib/bank";
+import { SEED_BANK, seedBank } from "@/lib/seed";
 import { subjectById } from "@/lib/exam";
 import { putImage } from "@/lib/blobstore";
 import { PAPER_EDGE, PAPER_QUALITY, compressImage } from "@/lib/image";
@@ -31,6 +32,7 @@ export default function BankPage() {
   const [paperName, setPaperName] = useState(PAPER_NAMES[0]);
   const [indexDraft, setIndexDraft] = useState("");
   const [busy, setBusy] = useState("");
+  const [seedMsg, setSeedMsg] = useState("");
 
   const papers = useMemo(
     () =>
@@ -150,6 +152,15 @@ export default function BankPage() {
           <Button variant="primary" onClick={addPaper} disabled={!year.trim()}>
             加入题库
           </Button>
+          <Button
+            onClick={() => {
+              const n = seedBank();
+              setSeedMsg(n ? `载入 ${n} 份已索引的卷子。` : "已索引的卷子都在里面了。");
+            }}
+          >
+            载入已索引的卷子（{SEED_BANK.length}）
+          </Button>
+          {seedMsg && <span className="text-sm text-ok">{seedMsg}</span>}
           <span className="text-xs text-muted-foreground">
             加进来之后再上传卷面照片，一次可以选多张。
           </span>
@@ -163,7 +174,7 @@ export default function BankPage() {
         <ClientOnly>
           {frequency.length === 0 ? (
             <Empty>
-              还没有逐题索引。把卷子加进来、给每题标上章节，这张表才有东西 —— 它是决定复习顺序的依据。
+              还没有逐题索引。2026 预考经济卷一的 30 题章节索引已经批好了 —— 点上面「载入已索引的卷子」就进来。
             </Empty>
           ) : (
             <ul className="space-y-1.5">
@@ -207,6 +218,13 @@ export default function BankPage() {
                       已做 {paper.questions.filter((q) => q.attempted).length}
                     </span>
                   </div>
+                  {/* 范围缺口必须写在卷子旁边：频率表上的「零」分不清
+                      「没考过」和「这次范围外」，只有这一行能分。 */}
+                  {paper.note && (
+                    <p className="mb-2 rounded-lg border border-warn/40 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                      ⚠️ {paper.note}
+                    </p>
+                  )}
 
                   <PaperPages
                     pageIds={paper.pageIds}

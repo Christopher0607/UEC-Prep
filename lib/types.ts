@@ -160,6 +160,12 @@ export interface PastPaper {
   /** IndexedDB keys of the page scans, in order. Never the images themselves. */
   pageIds: string[];
   questions: BankQuestion[];
+  /**
+   * Anything that would make the frequency table lie if you forgot it —
+   * above all a chapter this paper skipped because it was out of scope, which
+   * otherwise reads as "never examined" rather than "never tested here".
+   */
+  note?: string;
   createdAt: string;
 }
 
