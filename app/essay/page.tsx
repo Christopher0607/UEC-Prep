@@ -17,9 +17,11 @@ import {
   ESSAY_TYPES,
   GRAMMAR_TRAPS,
   PAPER2_SECTIONS,
+  POS_TABLE,
   SUFFIX_TABLE,
   WORD_FORM_METHOD,
   WORD_FORM_MISSES,
+  WORD_FORM_RULES,
   checkFiveLevels,
   checkLevelSpread,
   checkThesis,
@@ -528,6 +530,23 @@ export default function EssayPage() {
           ))}
         </ol>
 
+        <h3 className="mt-5 mb-2 text-sm font-semibold">
+          第 2 步 · 判词性只看空格前后，不看词根
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody>
+              {POS_TABLE.map((r) => (
+                <tr key={r.around} className="border-b last:border-b-0">
+                  <td className="py-2 pr-3 align-top font-mono text-xs">{r.around}</td>
+                  <td className="py-2 pr-3 align-top font-medium whitespace-nowrap">{r.pos}</td>
+                  <td className="py-2 align-top text-xs text-muted-foreground">{r.mine}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         <h3 className="mt-5 mb-2 text-sm font-semibold">后缀速查</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -544,6 +563,17 @@ export default function EssayPage() {
             </tbody>
           </table>
         </div>
+
+        <h3 className="mt-5 mb-2 text-sm font-semibold">三条从你的错题里归纳出来的规则</h3>
+        <ul className="space-y-2">
+          {WORD_FORM_RULES.map((r) => (
+            <li key={r.rule} className="rounded-xl border p-3">
+              <p className="text-sm font-medium">{r.rule}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{r.detail}</p>
+              <p className="mt-1 text-sm text-warn">{r.mine}</p>
+            </li>
+          ))}
+        </ul>
 
         <h3 className="mt-5 mb-2 text-sm font-semibold">预考丢掉的八个空</h3>
         <ul className="space-y-1.5">

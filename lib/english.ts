@@ -271,13 +271,53 @@ export const WORD_FORM_METHOD = [
     detail: "先不要看词根。看了就会开始猜变形，跳过判断词性这一步。",
   },
   {
-    step: "2. 只看空格前后，判断这里要什么词性",
+    step: "2. 只看空格前后，查下面那张表判断词性",
     detail:
-      "前面是 a / an / the / 形容词 → 名词；修饰动词或整句 → 副词；在 be 动词后、名词前 → 形容词；主语后没有动词 → 动词。",
+      "这一步是你丢分最多的地方 —— 预考八道错题里五道是词性就错了，后面怎么变形都白搭。",
   },
   {
     step: "3. 词性定了，才想那个词根变成这个词性长什么样",
-    detail: "顺带检查单复数、时态、以及要不要加前缀（un- / in- / re-）。",
+    detail: "从后缀表里挑形状。拿不准就挑一个你确定存在的词 —— 造词一定零分。",
+  },
+  {
+    step: "4. 三查：复数？时态？前缀？",
+    detail:
+      "这一步花五秒，预考能救回四题。42、43 漏复数；44 light 的过去分词是 lit 不是 lighten，而且你多加了一个不该有的 un-；45 少了该加的 in-。",
+  },
+];
+
+/**
+ * 判词性只看空格前后 —— **不看词根**。
+ * 看了词根就会开始猜变形，直接跳过判断这一步，五道错题就是这么来的。
+ */
+export const POS_TABLE: { around: string; pos: string; mine: string }[] = [
+  { around: "the ___ of · a/an ___ · his/its ___", pos: "名词", mine: "49 the ___ of → occurrence" },
+  { around: "the ___ + 复数动词 · 数词/these/many/several + ___", pos: "名词复数", mine: "42 → civilisations（你漏了 s）" },
+  { around: "___ + 名词", pos: "形容词 / 序数词", mine: "48 the ___ century → twentieth" },
+  { around: "动词 + ___ · ___ + 动词 · 句首逗号前", pos: "副词", mine: "50 修饰 misled → knowingly" },
+  { around: "by / of / in / for + ___", pos: "名词 或 动名词", mine: "45 By ___ → incorporating" },
+  { around: "be / is / was / been + ___", pos: "形容词 或 过去分词", mine: "44 had been ___ → lit" },
+  { around: "to ___ · can/must/should + ___", pos: "动词原形", mine: "—" },
+];
+
+/** 三条按你的错题归纳出来的规则。 */
+export const WORD_FORM_RULES: { rule: string; detail: string; mine: string }[] = [
+  {
+    rule: "人的后缀：看词根结尾",
+    detail:
+      "词根以 -y / -ic / -ics 结尾 → -ian（history→historian、music→musician、politics→politician、library→librarian）；抽象学科领域 → -ist（science→scientist、economy→economist）；普通「做某事的人」→ -er/-or。",
+    mine: "43 history 以 -y 结尾 → historians。你写的 historicst 不是英文词 —— 宁可写一个确定存在的词，也不要造词。",
+  },
+  {
+    rule: "-ism 还是 -isation？问「这是思想，还是动作」",
+    detail:
+      "-ism ＝ 主义／风格／现象（symbolism、capitalism、realism、tourism）；-isation ＝ 把……变成的过程（modernisation、organisation、civilisation）。",
+    mine: "47 问的是「象征意义」不是「象征化的过程」→ symbolism。",
+  },
+  {
+    rule: "重音在最后一音节的动词，加后缀要双写尾字母",
+    detail: "occur→occurred／occurrence、prefer→preferred、refer→referred、begin→beginning、permit→permitted。",
+    mine: "49 你写 occured 少一个 r —— 就算词性对了也照样扣分。",
   },
 ];
 
