@@ -46,7 +46,7 @@ ok("空数据时显示载入面板", await page.getByText("先把内容装进来
 await page.getByRole("button", { name: "一键载入全部" }).click();
 await page.waitForTimeout(1200);
 const got = await panel("内容已装好").innerText();
-ok("三项都满格", /450 \/ 450/.test(got) && /363 \/ 363/.test(got) && /88 \/ 88/.test(got) && /13 \/ 13/.test(got) && /1 \/ 1/.test(got), got.match(/\d+ \/ \d+/g)?.join(" "));
+ok("三项都满格", /450 \/ 450/.test(got) && /370 \/ 370/.test(got) && /95 \/ 95/.test(got) && /13 \/ 13/.test(got) && /1 \/ 1/.test(got), got.match(/\d+ \/ \d+/g)?.join(" "));
 await page.getByRole("button", { name: "补载入缺的" }).click();
 await page.waitForTimeout(600);
 ok("重复点不重复加", await page.getByText("都已经在里面了，没有要补的。").isVisible());

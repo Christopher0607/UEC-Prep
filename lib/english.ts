@@ -267,8 +267,9 @@ export const ENGLISH_SYLLABUS_SEED: { section: string; title: string }[] = [
  */
 export const WORD_FORM_METHOD = [
   {
-    step: "1. 遮住括号里的词",
-    detail: "先不要看词根。看了就会开始猜变形，跳过判断词性这一步。",
+    step: "1. 遮住括号里的词 —— 也不要列候选词",
+    detail:
+      "先不要看词根，更不要把三四个变形都写出来再挑。2021 卷你每格写了两三个候选：Q36 先写的 divitions 词性是对的、Q38 列出来的 rooted 就是正解 —— 最后圈的都是错的那个。候选清单就是「被词根牵着走」写在纸上。",
   },
   {
     step: "2. 只看空格前后，查下面那张表判断词性",
@@ -291,12 +292,46 @@ export const WORD_FORM_METHOD = [
  * 看了词根就会开始猜变形，直接跳过判断这一步，五道错题就是这么来的。
  */
 export const POS_TABLE: { around: string; pos: string; mine: string }[] = [
-  { around: "the ___ of · a/an ___ · his/its ___", pos: "名词", mine: "49 the ___ of → occurrence" },
-  { around: "the ___ + 复数动词 · 数词/these/many/several + ___", pos: "名词复数", mine: "42 → civilisations（你漏了 s）" },
-  { around: "___ + 名词", pos: "形容词 / 序数词", mine: "48 the ___ century → twentieth" },
-  { around: "动词 + ___ · ___ + 动词 · 句首逗号前", pos: "副词", mine: "50 修饰 misled → knowingly" },
-  { around: "by / of / in / for + ___", pos: "名词 或 动名词", mine: "45 By ___ → incorporating" },
-  { around: "be / is / was / been + ___", pos: "形容词 或 过去分词", mine: "44 had been ___ → lit" },
+  {
+    around: "the ___ of · a/an ___ · his/its ___ · 形容词 + ___",
+    pos: "名词",
+    mine: "预考 49 the ___ of → occurrence",
+  },
+  {
+    around: "the ___ + 复数动词 · 数词/these/many/several + ___",
+    pos: "名词复数",
+    mine: "预考 42 → civilisations（你漏了 s）",
+  },
+  {
+    around: "X and ___ · X or ___",
+    pos: "跟 X 对称：同词性、同单复数",
+    mine: "2021 Q36 dilemmas and deep ___ → divisions",
+  },
+  {
+    around: "___ + 名词",
+    pos: "形容词 / 序数词（形容词永远没有复数）",
+    mine: "预考 48 twentieth · 2021 Q39 economic、Q42 shaky、Q44 European —— 一份卷在这一行错三题",
+  },
+  {
+    around: "动词 + ___ · ___ + 动词 · 句首逗号前",
+    pos: "副词",
+    mine: "预考 50 knowingly · 2021 Q45 Jefferson ___ grew → reportedly",
+  },
+  {
+    around: "by / of / in / for + ___",
+    pos: "名词 或 动名词",
+    mine: "预考 45 By ___ → incorporating",
+  },
+  {
+    around: "be / is / was / been + ___（中间夹副词也一样）",
+    pos: "形容词 或 过去分词",
+    mine: "预考 44 had been ___ → lit · 2021 Q38 is deeply ___ in → rooted",
+  },
+  {
+    around: "see / find / keep / leave + 宾语 + ___",
+    pos: "现在分词 -ing（宾语补足语）",
+    mine: "2021 Q40 sees … the other side ___ virtue → lacking",
+  },
   { around: "to ___ · can/must/should + ___", pos: "动词原形", mine: "—" },
 ];
 
@@ -318,6 +353,22 @@ export const WORD_FORM_RULES: { rule: string; detail: string; mine: string }[] =
     rule: "重音在最后一音节的动词，加后缀要双写尾字母",
     detail: "occur→occurred／occurrence、prefer→preferred、refer→referred、begin→beginning、permit→permitted。",
     mine: "49 你写 occured 少一个 r —— 就算词性对了也照样扣分。",
+  },
+  {
+    rule: "形容词永远没有复数",
+    detail: "名词前面那个格子填的是形容词，后面的名词再复数，形容词也不加 s。",
+    mine: "2021 Q44 early ___ colonists → European。你圈的 Europians 错两处：形容词加了 s，拼写 -pian 应为 -pean。",
+  },
+  {
+    rule: "成对的形容词：意思不同，不能互换",
+    detail:
+      "economic（经济上的）vs economical（节省的）· historic（有历史意义的）vs historical（历史上的）· sensible（明智的）vs sensitive（敏感的）· successful（成功的）vs successive（连续的）· industrial（工业的）vs industrious（勤奋的）。",
+    mine: "2021 Q39 ___ opportunities ＝「经济机会」→ economic。你列了 economist、economics、economical，就是没有 economic。",
+  },
+  {
+    rule: "-sion 还是 -tion：看动词结尾",
+    detail: "动词以 -d / -de 结尾 → -sion：divide→division、decide→decision、include→inclusion、explode→explosion。",
+    mine: "2021 Q36 你写 divitions —— 词性对了，拼法错。",
   },
 ];
 
